@@ -3,7 +3,6 @@ import { compute, DEFAULTS, type Inputs } from "./lib/compute";
 import { money } from "./lib/format";
 import BeforeCard from "./components/BeforeCard";
 import Field from "./components/Field";
-import ModuleSlide from "./components/ModuleSlide";
 import { Pager, PagerNav, type PagerHandle } from "./components/Pager";
 import HeroSlide from "./components/HeroSlide";
 import CustomerForm from "./components/CustomerForm";
@@ -43,22 +42,25 @@ export default function App() {
   };
 
   // Slide layout:
-  //   0       hero / welcome
-  //   1..4    modules
-  //   5       customer form (gate)
-  //   6       summary (only after submit)
+  //   0   hero / welcome
+  //   1   wszystkie dane wejściowe (jeden ekran)
+  //   2   customer form (gate)
+  //   3   summary (only after submit)
   const slides = [
     <HeroSlide key="hero" onStart={() => pagerRef.current?.next()} />,
 
-    <ModuleSlide
-      key="m1"
-      index={1}
-      title="Spotkania z dostawcami"
-      subtitle="Czas poświęcony na spotkania z dostawcami w ciągu roku"
-      hoursSaved={r.m1.hours_saved}
-      impact={r.m1.revenue}
-      impactLabel="Dodatkowy przychód / rok"
+    <div
+      key="inputs"
+      className="h-full flex flex-col px-4 pt-4 pb-3 overflow-y-auto"
     >
+      <div className="flex-none mb-3">
+        <h2 className="font-display text-[20px] font-bold uppercase tracking-tight text-kramp-blue leading-tight">
+          Twoje dane
+        </h2>
+        <p className="text-[12px] text-kramp-blue/55 leading-snug mt-0.5">
+          Cztery liczby — resztę policzymy za Ciebie.
+        </p>
+      </div>
       <BeforeCard>
         <Field
           label="Liczba dostawców"
@@ -67,19 +69,6 @@ export default function App() {
           min={1}
           hint="Zakładamy jedno spotkanie z każdym dostawcą rocznie (po 1 godz.)."
         />
-      </BeforeCard>
-    </ModuleSlide>,
-
-    <ModuleSlide
-      key="m2"
-      index={2}
-      title="Proces zamówień"
-      subtitle="Wyszukiwanie produktów i obsługa dostaw"
-      hoursSaved={r.m2.hours_saved}
-      impact={r.m2.revenue}
-      impactLabel="Dodatkowy przychód / rok"
-    >
-      <BeforeCard>
         <Field
           label="Zamówienia / tydzień"
           value={Math.round(inputs.orders_per_year / WEEKS_PER_YEAR)}
@@ -87,18 +76,6 @@ export default function App() {
           min={0}
           hint={`Liczymy rocznie: tygodniowo × ${WEEKS_PER_YEAR} tygodni. Zakładamy 3 min na znalezienie produktu i 5 min na przyniesienie z półki.`}
         />
-      </BeforeCard>
-    </ModuleSlide>,
-
-    <ModuleSlide
-      key="m3"
-      index={3}
-      title="Amortyzacja zapasów"
-      subtitle="Mniej zapasów na półce, mniej odpisów"
-      impact={r.m3.savings}
-      impactLabel="Roczne oszczędności"
-    >
-      <BeforeCard>
         <Field
           label="Średnia wartość zapasów"
           value={inputs.b_stock_value}
@@ -108,18 +85,6 @@ export default function App() {
           min={0}
           hint="% do odpisu i poziom odpisu uzupełniamy wartościami domyślnymi."
         />
-      </BeforeCard>
-    </ModuleSlide>,
-
-    <ModuleSlide
-      key="m4"
-      index={4}
-      title="Transport"
-      subtitle="Koszt frachtu dla wszystkich zamówień"
-      impact={r.m4.savings}
-      impactLabel="Roczne oszczędności"
-    >
-      <BeforeCard>
         <Field
           label="Koszt transportu / rok"
           value={inputs.b_transport_cost}
@@ -130,7 +95,7 @@ export default function App() {
           hint="Porównujemy z kosztem, gdyby wszystkie zamówienia szły przez Kramp."
         />
       </BeforeCard>
-    </ModuleSlide>,
+    </div>,
 
     <CustomerForm
       key="customer"
@@ -215,8 +180,8 @@ export default function App() {
                   "calc(env(safe-area-inset-bottom, 0px) + 6px)",
               }}
             >
-              {active < 5
-                ? "Przewijaj moduły — pełny raport znajdziesz na końcu."
+              {active === 1
+                ? "Przewiń dalej, aby przejść do podsumowania."
                 : "Uzupełnij dane, aby odblokować podsumowanie."}
             </div>
           )}

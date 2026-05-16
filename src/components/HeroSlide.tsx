@@ -65,8 +65,7 @@ export default function HeroSlide({ onStart }: Props) {
             <span className="text-kramp-turquoise">oszczędzasz</span> z Kramp.
           </h1>
           <p className="mt-2 text-[13.5px] leading-snug text-white/85 max-w-[300px]">
-            Cztery krótkie kroki. Realne dane z Twojego sklepu. Jasna odpowiedź
-            w niecałą minutę.{" "}
+            Kilka liczb z Twojego sklepu. Jasna odpowiedź w niecałą minutę.{" "}
             <span className="font-semibold">To takie proste.</span>
           </p>
         </div>
@@ -90,7 +89,7 @@ export default function HeroSlide({ onStart }: Props) {
         </button>
 
         <p className="text-[10.5px] text-white/70 text-center mt-2.5 leading-snug">
-          Przewiń 4 moduły · Pełny raport na końcu
+          Jeden ekran danych · Pełny raport na końcu
         </p>
       </div>
     </div>
