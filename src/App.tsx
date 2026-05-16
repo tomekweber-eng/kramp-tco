@@ -1,8 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { compute, DEFAULTS, type Inputs } from "./lib/compute";
-import { hours, money } from "./lib/format";
+import { money } from "./lib/format";
 import BeforeCard from "./components/BeforeCard";
-import AfterCard from "./components/AfterCard";
 import Field from "./components/Field";
 import ModuleSlide from "./components/ModuleSlide";
 import { Pager, PagerNav, type PagerHandle } from "./components/Pager";
@@ -10,6 +9,9 @@ import HeroSlide from "./components/HeroSlide";
 import CustomerForm from "./components/CustomerForm";
 import SummarySlide from "./components/SummarySlide";
 import { isCustomerValid, type Customer } from "./types";
+
+// Zamówienia liczymy rocznie: tygodniowo × liczba tygodni roboczych w roku.
+const WEEKS_PER_YEAR = 47;
 
 export default function App() {
   const [inputs, setInputs] = useState<Inputs>(DEFAULTS);
@@ -32,7 +34,7 @@ export default function App() {
       setInputs((i) => ({ ...i, [k]: v }));
 
   const reset = () => {
-    if (window.confirm("Reset all inputs and start over?")) {
+    if (window.confirm("Zresetować wszystkie dane i zacząć od nowa?")) {
       setInputs(DEFAULTS);
       setCustomer({ name: "", email: "", postalCode: "" });
       setSubmitted(false);
@@ -51,277 +53,83 @@ export default function App() {
     <ModuleSlide
       key="m1"
       index={1}
-      title="Supplier meetings"
-      subtitle="Time spent meeting suppliers each year"
+      title="Spotkania z dostawcami"
+      subtitle="Czas poświęcony na spotkania z dostawcami w ciągu roku"
       hoursSaved={r.m1.hours_saved}
       impact={r.m1.revenue}
-      impactLabel="Extra revenue / yr"
+      impactLabel="Dodatkowy przychód / rok"
     >
       <BeforeCard>
         <Field
-          label="Suppliers"
+          label="Liczba dostawców"
           value={inputs.b_suppliers}
           onChange={set("b_suppliers")}
           min={1}
+          hint="Zakładamy jedno spotkanie z każdym dostawcą rocznie (po 1 godz.)."
         />
-        <div className="grid grid-cols-2 gap-2">
-          <Field
-            label="Meetings / yr"
-            value={inputs.b_meetings}
-            onChange={set("b_meetings")}
-            min={0}
-          />
-          <Field
-            label="Meeting"
-            value={inputs.b_duration}
-            onChange={set("b_duration")}
-            unit="h"
-            step={0.5}
-            min={0}
-          />
-        </div>
       </BeforeCard>
-      <AfterCard>
-        <Field
-          label="Suppliers"
-          value={inputs.a_suppliers}
-          onChange={set("a_suppliers")}
-          min={0}
-          tone="after"
-        />
-        <div className="grid grid-cols-2 gap-2">
-          <Field
-            label="Meetings / yr"
-            value={inputs.a_meetings}
-            onChange={set("a_meetings")}
-            min={0}
-            tone="after"
-          />
-          <Field
-            label="Meeting"
-            value={inputs.a_duration}
-            onChange={set("a_duration")}
-            unit="h"
-            step={0.5}
-            min={0}
-            tone="after"
-          />
-        </div>
-      </AfterCard>
-      <Shared>
-        <Field
-          label="Revenue / shop-team h"
-          value={inputs.turnover_per_hour}
-          onChange={set("turnover_per_hour")}
-          unit="€/h"
-          min={0}
-          hint="Total shop turnover ÷ annual working time of the shop team."
-        />
-      </Shared>
     </ModuleSlide>,
 
     <ModuleSlide
       key="m2"
       index={2}
-      title="Order process"
-      subtitle="Finding products & treating deliveries"
+      title="Proces zamówień"
+      subtitle="Wyszukiwanie produktów i obsługa dostaw"
       hoursSaved={r.m2.hours_saved}
       impact={r.m2.revenue}
-      impactLabel="Extra revenue / yr"
+      impactLabel="Dodatkowy przychód / rok"
     >
-      <Shared>
-        <Field
-          label="Orders / year"
-          value={inputs.orders_per_year}
-          onChange={set("orders_per_year")}
-          min={0}
-          hint="≈ 25 orders/week × 47 weeks per regular supplier."
-        />
-      </Shared>
       <BeforeCard>
-        <div className="grid grid-cols-2 gap-2">
-          <Field
-            label="Find product"
-            value={inputs.b_time_find}
-            onChange={set("b_time_find")}
-            unit="min"
-            step={0.5}
-            min={0}
-          />
-          <Field
-            label="Receive & shelve"
-            value={inputs.b_time_treat}
-            onChange={set("b_time_treat")}
-            unit="min"
-            step={0.5}
-            min={0}
-          />
-        </div>
-        <Stat label="Time / year" value={hours(r.m2.before_h)} />
+        <Field
+          label="Zamówienia / tydzień"
+          value={Math.round(inputs.orders_per_year / WEEKS_PER_YEAR)}
+          onChange={(v) => set("orders_per_year")(v * WEEKS_PER_YEAR)}
+          min={0}
+          hint={`Liczymy rocznie: tygodniowo × ${WEEKS_PER_YEAR} tygodni. Zakładamy 3 min na znalezienie produktu i 5 min na przyniesienie z półki.`}
+        />
       </BeforeCard>
-      <AfterCard>
-        <div className="grid grid-cols-2 gap-2">
-          <Field
-            label="Find product"
-            value={r.m2.a_time_find}
-            unit="min"
-            readOnly
-            autoBadge
-            tone="after"
-          />
-          <Field
-            label="Receive & shelve"
-            value={r.m2.a_time_treat}
-            unit="min"
-            readOnly
-            autoBadge
-            tone="after"
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <Stat
-            label="Orders / yr"
-            value={`${Math.round(r.m2.after_orders)}`}
-            sub="auto"
-          />
-          <Stat label="Time / yr" value={hours(r.m2.after_h)} />
-        </div>
-      </AfterCard>
     </ModuleSlide>,
 
     <ModuleSlide
       key="m3"
       index={3}
-      title="Stock depreciation"
-      subtitle="Less stock on the shelf, less written off"
+      title="Amortyzacja zapasów"
+      subtitle="Mniej zapasów na półce, mniej odpisów"
       impact={r.m3.savings}
-      impactLabel="Annual savings"
+      impactLabel="Roczne oszczędności"
     >
       <BeforeCard>
         <Field
-          label="Average stock value"
+          label="Średnia wartość zapasów"
           value={inputs.b_stock_value}
           onChange={set("b_stock_value")}
           unit="€"
           step={1000}
           min={0}
+          hint="% do odpisu i poziom odpisu uzupełniamy wartościami domyślnymi."
         />
-        <div className="grid grid-cols-2 gap-2">
-          <Field
-            label="% to depreciate"
-            value={inputs.b_pct_depr}
-            onChange={set("b_pct_depr")}
-            unit="%"
-            min={0}
-            max={100}
-          />
-          <Field
-            label="Depr. level"
-            value={inputs.b_depr_level}
-            onChange={set("b_depr_level")}
-            unit="%"
-            min={0}
-            max={100}
-          />
-        </div>
-        <Stat label="Annual write-off" value={money(r.m3.before_depr)} />
       </BeforeCard>
-      <AfterCard>
-        <div className="grid grid-cols-2 gap-2">
-          <Field
-            label="Stock reduction"
-            value={inputs.stock_reduction}
-            onChange={set("stock_reduction")}
-            unit="%"
-            min={0}
-            max={100}
-            tone="after"
-          />
-          <Field
-            label="% to depreciate"
-            value={inputs.a_pct_depr}
-            onChange={set("a_pct_depr")}
-            unit="%"
-            min={0}
-            max={100}
-            tone="after"
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <Stat
-            label="New stock"
-            value={money(r.m3.a_stock_value)}
-            sub="auto"
-          />
-          <Stat label="Write-off" value={money(r.m3.after_depr)} />
-        </div>
-      </AfterCard>
     </ModuleSlide>,
 
     <ModuleSlide
       key="m4"
       index={4}
       title="Transport"
-      subtitle="Freight cost across all orders"
+      subtitle="Koszt frachtu dla wszystkich zamówień"
       impact={r.m4.savings}
-      impactLabel="Annual savings"
+      impactLabel="Roczne oszczędności"
     >
       <BeforeCard>
         <Field
-          label="Transport cost / year"
+          label="Koszt transportu / rok"
           value={inputs.b_transport_cost}
           onChange={set("b_transport_cost")}
           unit="€"
           step={500}
           min={0}
+          hint="Porównujemy z kosztem, gdyby wszystkie zamówienia szły przez Kramp."
         />
-        <div className="grid grid-cols-2 gap-2">
-          <Field
-            label="% via Kramp"
-            value={inputs.b_pct_kramp}
-            onChange={set("b_pct_kramp")}
-            unit="%"
-            min={0}
-            max={100}
-          />
-          <Stat
-            label="Avg freight (other)"
-            value={money(r.m4.avg_carriage_before)}
-          />
-        </div>
       </BeforeCard>
-      <AfterCard>
-        <div className="grid grid-cols-2 gap-2">
-          <Field
-            label="% via Kramp"
-            value={inputs.a_pct_kramp}
-            onChange={set("a_pct_kramp")}
-            unit="%"
-            min={0}
-            max={100}
-            tone="after"
-          />
-          <Field
-            label="Kramp freight"
-            value={inputs.kramp_freight}
-            onChange={set("kramp_freight")}
-            unit="€"
-            min={0}
-            tone="after"
-            hint="0 € when the order value exceeds 300 €."
-          />
-        </div>
-        <Field
-          label="Avg freight (other suppliers)"
-          value={inputs.a_avg_carriage_other}
-          onChange={set("a_avg_carriage_other")}
-          unit="€"
-          step={0.5}
-          min={0}
-          tone="after"
-        />
-        <Stat label="Total freight cost" value={money(r.m4.cost_after)} />
-      </AfterCard>
     </ModuleSlide>,
 
     <CustomerForm
@@ -356,7 +164,6 @@ export default function App() {
             onReset={reset}
             step={active + 1}
             total={slides.length}
-            customerName={unlocked ? customer.name : null}
           />
         )}
 
@@ -383,16 +190,19 @@ export default function App() {
               }}
             >
               <div className="grid grid-cols-3 gap-1 text-left">
-                <Cell label="Revenue / yr" value={money(r.total_revenue)} />
-                <Cell label="Savings / yr" value={money(r.total_savings)} />
+                <Cell label="Przychód / rok" value={money(r.total_revenue)} />
                 <Cell
-                  label="Net / yr"
+                  label="Oszczędności / rok"
+                  value={money(r.total_savings)}
+                />
+                <Cell
+                  label="Netto / rok"
                   value={money(r.net_benefit)}
                   highlight
                 />
               </div>
               <div className="text-center text-[9.5px] uppercase tracking-[0.18em] font-bold opacity-85 mt-1">
-                Tap for full summary →
+                Dotknij, aby zobaczyć pełne podsumowanie →
               </div>
             </button>
           )}
@@ -406,8 +216,8 @@ export default function App() {
               }}
             >
               {active < 5
-                ? "Swipe through the modules — your full report is at the end."
-                : "Fill in the details to unlock your summary."}
+                ? "Przewijaj moduły — pełny raport znajdziesz na końcu."
+                : "Uzupełnij dane, aby odblokować podsumowanie."}
             </div>
           )}
 
@@ -429,12 +239,10 @@ function TopBar({
   onReset,
   step,
   total,
-  customerName,
 }: {
   onReset: () => void;
   step: number;
   total: number;
-  customerName: string | null;
 }) {
   return (
     <header
@@ -445,10 +253,10 @@ function TopBar({
         <KrampMark />
         <div className="min-w-0 flex-1 leading-none">
           <div className="font-display text-[15px] font-bold uppercase tracking-tight">
-            TCO Calculator
+            Kalkulator TCO
           </div>
           <div className="text-[10px] uppercase tracking-[0.18em] font-semibold opacity-80 mt-0.5 truncate">
-            {customerName ? customerName : "It's that easy."}
+            To takie proste.
           </div>
         </div>
         <div className="text-[10px] uppercase tracking-wider font-bold opacity-85 tabular-nums whitespace-nowrap">
@@ -457,7 +265,7 @@ function TopBar({
         <button
           type="button"
           onClick={onReset}
-          aria-label="Reset to defaults"
+          aria-label="Przywróć domyślne"
           className="flex-none w-8 h-8 grid place-items-center rounded-full bg-white/15 hover:bg-white/25 active:bg-white/30 transition-colors"
         >
           <svg viewBox="0 0 24 24" className="w-[16px] h-[16px]" fill="none">
@@ -495,44 +303,6 @@ function KrampMark() {
   );
 }
 
-function Shared({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="rounded-xl bg-kramp-turquoise-tint border border-kramp-turquoise/30 px-3 py-2.5">
-      <div className="flex items-center gap-2 mb-1.5">
-        <span className="inline-flex h-5 px-2 items-center rounded-full bg-kramp-turquoise text-[10px] font-bold uppercase tracking-wider text-white">
-          Shared
-        </span>
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  sub,
-}: {
-  label: string;
-  value: string;
-  sub?: string;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-2 rounded-lg bg-white/60 px-2.5 py-1.5">
-      <span className="text-[10px] text-kramp-blue/60 font-bold uppercase tracking-wider truncate">
-        {label}
-      </span>
-      <span className="font-display text-[13.5px] font-bold tabular-nums text-kramp-blue flex items-baseline gap-1.5 whitespace-nowrap">
-        {value}
-        {sub && (
-          <span className="text-[9px] font-bold uppercase tracking-wider text-kramp-red/80 bg-kramp-red-tint px-1 py-px rounded">
-            {sub}
-          </span>
-        )}
-      </span>
-    </div>
-  );
-}
 
 function Cell({
   label,
