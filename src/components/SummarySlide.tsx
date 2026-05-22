@@ -9,7 +9,7 @@ type Props = {
 };
 
 export default function SummarySlide({ results, customer }: Props) {
-  const today = new Date().toLocaleDateString("pl-PL", {
+  const today = new Date().toLocaleDateString("en-GB", {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -20,9 +20,9 @@ export default function SummarySlide({ results, customer }: Props) {
       {/* Brand header */}
       <div className="flex-none bg-kramp-red text-white px-4 py-2.5 flex items-center gap-2">
         <span className="inline-flex h-5 px-2 items-center rounded-full bg-white/20 text-[10px] font-bold uppercase tracking-wider">
-          Podsumowanie
+          Summary
         </span>
-        <span className="text-[11px] opacity-90 truncate">To takie proste.</span>
+        <span className="text-[11px] opacity-90 truncate">It's that easy.</span>
       </div>
 
       {/* Body */}
@@ -31,7 +31,7 @@ export default function SummarySlide({ results, customer }: Props) {
         <div className="flex items-baseline justify-between gap-2">
           <div className="min-w-0">
             <div className="text-[10px] font-bold uppercase tracking-wider text-kramp-blue/55">
-              Przygotowano dla
+              Prepared for
             </div>
             <div className="font-display text-[17px] font-bold text-kramp-blue truncate leading-tight">
               {customer.name || "—"}
@@ -49,20 +49,20 @@ export default function SummarySlide({ results, customer }: Props) {
         {/* Hero total */}
         <div className="rounded-2xl bg-kramp-red text-white px-4 py-3 shadow-md">
           <div className="text-[10px] font-bold uppercase tracking-wider opacity-85">
-            Roczna korzyść netto
+            Net annual benefit
           </div>
           <div className="font-display text-[36px] font-bold tabular-nums leading-[1] mt-0.5">
             {money(results.net_benefit)}
           </div>
           <div className="text-[10.5px] opacity-85 mt-1">
-            Rocznie, przy pokazanym modelu konsolidacji
+            Per year, with the consolidation pattern shown
           </div>
         </div>
 
         {/* Donut chart */}
         <div className="rounded-2xl bg-white border border-kramp-blue/10 px-3 py-2.5 shadow-sm">
           <div className="text-[10px] font-bold uppercase tracking-wider text-kramp-blue/55 mb-2">
-            Skąd pochodzi korzyść
+            Where the benefit comes from
           </div>
           <RevSavDonut
             revenue={Math.max(0, results.total_revenue)}
@@ -73,22 +73,22 @@ export default function SummarySlide({ results, customer }: Props) {
         {/* Per-module bars */}
         <div className="rounded-2xl bg-white border border-kramp-blue/10 px-3 py-2.5 shadow-sm">
           <div className="text-[10px] font-bold uppercase tracking-wider text-kramp-blue/55 mb-2.5">
-            Wpływ wg modułu
+            Impact by module
           </div>
           <ImpactBars
             items={[
               {
-                label: "1. Spotkania z dostawcami",
+                label: "1. Supplier meetings",
                 value: results.m1.revenue,
                 tone: "revenue",
               },
               {
-                label: "2. Proces zamówień",
+                label: "2. Order process",
                 value: results.m2.revenue,
                 tone: "revenue",
               },
               {
-                label: "3. Amortyzacja zapasów",
+                label: "3. Stock depreciation",
                 value: results.m3.savings,
                 tone: "savings",
               },
@@ -110,34 +110,34 @@ export default function SummarySlide({ results, customer }: Props) {
         {/* Per-module breakdown */}
         <div className="grid gap-1.5">
           <Row
-            label="1. Spotkania z dostawcami"
-            sub={`Zaoszczędzono ${hours(results.m1.hours_saved)}`}
+            label="1. Supplier meetings"
+            sub={`${hours(results.m1.hours_saved)} saved`}
             value={money(results.m1.revenue)}
             tone="revenue"
           />
           <Row
-            label="2. Proces zamówień"
-            sub={`Zaoszczędzono ${hours(results.m2.hours_saved)}`}
+            label="2. Order process"
+            sub={`${hours(results.m2.hours_saved)} saved`}
             value={money(results.m2.revenue)}
             tone="revenue"
           />
           <Row
-            label="3. Amortyzacja zapasów"
-            sub="Niższe odpisy zapasów"
+            label="3. Stock depreciation"
+            sub="Lower written-off stock"
             value={money(Math.abs(results.m3.savings))}
             tone={results.m3.savings >= 0 ? "savings" : "neutral"}
           />
           <Row
             label="4. Transport"
-            sub="Skonsolidowany fracht"
+            sub="Consolidated freight"
             value={money(Math.abs(results.m4.savings))}
             tone={results.m4.savings >= 0 ? "savings" : "neutral"}
           />
         </div>
 
         <p className="text-[10.5px] leading-relaxed text-kramp-blue/55">
-          Wartości orientacyjne na podstawie wprowadzonych danych. Ostateczne
-          korzyści zależą od zakresu konsolidacji uzgodnionego z Kramp.
+          Indicative figures based on the inputs provided. Final benefits
+          depend on the consolidation scope agreed with Kramp.
         </p>
 
         <button
@@ -145,7 +145,7 @@ export default function SummarySlide({ results, customer }: Props) {
           onClick={() => window.print()}
           className="no-print w-full h-11 rounded-xl bg-kramp-blue text-white font-display font-bold uppercase tracking-wide text-[14px] hover:bg-kramp-blue/90 active:scale-[0.99]"
         >
-          Drukuj podsumowanie
+          Print one-pager
         </button>
       </div>
     </div>

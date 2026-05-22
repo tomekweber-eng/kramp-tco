@@ -22,24 +22,26 @@ export type Inputs = {
 
   // Module 4
   b_transport_cost: number;
+  b_pct_kramp: number;
+  a_pct_kramp: number;
   kramp_freight: number;
-  kramp_free_freight_pct: number;
+  a_avg_carriage_other: number;
 };
 
 export const DEFAULTS: Inputs = {
   // Module 1
   b_suppliers: 50,
   a_suppliers: 25,
-  b_meetings: 1, // założenie: jedno spotkanie z dostawcą rocznie
-  a_meetings: 1,
+  b_meetings: 4,
+  a_meetings: 4,
   b_duration: 1,
   a_duration: 1,
   turnover_per_hour: 200,
 
   // Module 2
-  orders_per_year: 1175, // ≈ 25 zamówień/tydz. × 47 tygodni
-  b_time_find: 3, // założenie: 3 min na znalezienie produktu
-  b_time_treat: 5, // założenie: 5 min na przyniesienie z półki
+  orders_per_year: 1175,
+  b_time_find: 7,
+  b_time_treat: 14,
 
   // Module 3
   b_stock_value: 1_000_000,
@@ -50,8 +52,10 @@ export const DEFAULTS: Inputs = {
 
   // Module 4
   b_transport_cost: 20_000,
-  kramp_freight: 20, // stawka Kramp za zamówienie z frachtem płatnym
-  kramp_free_freight_pct: 70, // założenie: % zamówień > 300 € (fracht 0 €)
+  b_pct_kramp: 10,
+  a_pct_kramp: 20,
+  kramp_freight: 20,
+  a_avg_carriage_other: 17.5,
 };
 
 export type Results = {
@@ -78,6 +82,11 @@ export type Results = {
     savings: number;
   };
   m4: {
+    kramp_before: number;
+    kramp_after: number;
+    other_before: number;
+    other_after: number;
+    avg_carriage_before: number;
     cost_after: number;
     savings: number;
   };
@@ -119,12 +128,17 @@ export function compute(i: Inputs): Results {
     a_stock_value * pct(i.a_pct_depr) * pct(i.b_depr_level);
   const m3_savings = m3_before_depr - m3_after_depr;
 
-  // Module 4 — Transport (wariant „wszystkie zamówienia przez Kramp")
-  // Zakładamy, że część zamówień > 300 € ma fracht 0 € (reguła Kramp);
-  // pozostałe płacą stałą stawkę Kramp za zamówienie.
-  const m4_paid_orders =
-    m2_before_orders * (1 - pct(i.kramp_free_freight_pct));
-  const cost_after = m4_paid_orders * i.kramp_freight;
+  // Module 4 — Transport
+  const kramp_before = m2_before_orders * pct(i.b_pct_kramp);
+  const kramp_after = m2_after_orders * pct(i.a_pct_kramp);
+  const other_before = m2_before_orders - kramp_before;
+  const other_after = m2_after_orders - kramp_after;
+  const avg_carriage_before =
+    other_before > 0
+      ? (i.b_transport_cost - kramp_before * i.kramp_freight) / other_before
+      : 0;
+  const cost_after =
+    kramp_after * i.kramp_freight + other_after * i.a_avg_carriage_other;
   const m4_savings = i.b_transport_cost - cost_after;
 
   const total_revenue = m1_revenue + m2_revenue;
@@ -155,6 +169,11 @@ export function compute(i: Inputs): Results {
       savings: safe(m3_savings),
     },
     m4: {
+      kramp_before: safe(kramp_before),
+      kramp_after: safe(kramp_after),
+      other_before: safe(other_before),
+      other_after: safe(other_after),
+      avg_carriage_before: safe(avg_carriage_before),
       cost_after: safe(cost_after),
       savings: safe(m4_savings),
     },

@@ -50,7 +50,7 @@ export default function Field({
             type="button"
             onClick={() => setShowHint((s) => !s)}
             className="w-4 h-4 flex items-center justify-center rounded-full bg-kramp-blue/10 text-kramp-blue/60 text-[10px] font-bold hover:bg-kramp-blue/15"
-            aria-label="Więcej informacji"
+            aria-label="More info"
           >
             i
           </button>

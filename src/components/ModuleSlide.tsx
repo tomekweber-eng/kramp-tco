@@ -47,7 +47,7 @@ export default function ModuleSlide({
         {hoursSaved !== undefined && (
           <div className="min-w-0 flex-1">
             <div className="text-[9px] font-bold uppercase tracking-wider text-white/55">
-              Zaoszczędzone godziny
+              Hours saved
             </div>
             <div className="text-[18px] font-display font-bold tabular-nums leading-tight">
               {hours(Math.abs(hoursSaved))}

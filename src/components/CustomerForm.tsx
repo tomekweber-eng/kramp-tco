@@ -22,42 +22,42 @@ export default function CustomerForm({
       <div className="flex items-center gap-2 mb-3">
         <span className="inline-flex h-6 px-2 items-center rounded-full bg-kramp-red text-[11px] font-bold uppercase tracking-wider text-white gap-1">
           <Lock />
-          Ostatni krok
+          Final step
         </span>
         <span className="text-[12px] text-kramp-blue/55 font-medium">
-          Odblokuj podsumowanie
+          Unlock the summary
         </span>
       </div>
 
       <h1 className="font-display text-[26px] font-bold uppercase tracking-tight text-kramp-blue leading-[1.05] mb-1.5">
-        Już prawie.
+        Almost there.
         <br />
-        <span className="text-kramp-red">Gdzie mamy to wysłać?</span>
+        <span className="text-kramp-red">Where shall we send it?</span>
       </h1>
       <p className="text-[13px] leading-snug text-kramp-blue/65 mb-4">
-        Podaj swoje dane, a pokażemy Ci pełny raport TCO — z wykresami, wpływem
-        każdego modułu i wersją do druku.
+        Enter your details and we'll show you the full TCO report — with charts,
+        per-module impact and a printable one-pager.
       </p>
 
       <div className="grid gap-2.5">
         <Input
-          label="Nazwa klienta / sklepu"
+          label="Customer / shop name"
           value={customer.name}
           onChange={upd("name")}
-          placeholder="np. Gospodarstwo Kowalski"
+          placeholder="e.g. Smith Farm Equipment"
           autoComplete="organization"
         />
         <Input
-          label="E-mail"
+          label="Email"
           value={customer.email}
           onChange={upd("email")}
-          placeholder="kontakt@sklep.pl"
+          placeholder="contact@shop.com"
           type="email"
           autoComplete="email"
           inputMode="email"
         />
         <Input
-          label="Kod pocztowy"
+          label="Postal code"
           value={customer.postalCode}
           onChange={upd("postalCode")}
           placeholder="00-000"
@@ -79,7 +79,7 @@ export default function CustomerForm({
         >
           {isValid ? (
             <>
-              Pokaż moje oszczędności
+              Show my savings
               <svg viewBox="0 0 20 20" className="w-5 h-5" fill="none">
                 <path
                   d="M5 10h10m-4-4 4 4-4 4"
@@ -91,11 +91,11 @@ export default function CustomerForm({
               </svg>
             </>
           ) : (
-            "Uzupełnij wszystkie pola"
+            "Fill in all fields"
           )}
         </button>
         <p className="text-[10.5px] text-center text-kramp-blue/45 mt-2 leading-snug">
-          Nie udostępniamy Twoich danych. To narzędzie demonstracyjne.
+          We never share your data. This is a sales demo tool.
         </p>
       </div>
     </div>

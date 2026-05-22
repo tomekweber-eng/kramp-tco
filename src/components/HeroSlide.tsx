@@ -34,7 +34,7 @@ export default function HeroSlide({ onStart }: Props) {
         {/* Tiny top label */}
         <div className="flex items-center gap-2 flex-none">
           <span className="inline-flex h-6 px-2.5 items-center rounded-full bg-white/15 backdrop-blur-sm text-[10.5px] font-bold uppercase tracking-wider">
-            Kalkulator TCO
+            TCO Calculator
           </span>
           <span className="text-[10.5px] uppercase tracking-[0.2em] font-semibold opacity-75">
             v1.0
@@ -60,13 +60,14 @@ export default function HeroSlide({ onStart }: Props) {
         {/* Hero copy */}
         <div className="flex-none mb-5">
           <h1 className="font-display text-[32px] leading-[1.02] font-bold uppercase tracking-tight">
-            Zobacz, ile
+            Show how much
             <br />
-            <span className="text-kramp-turquoise">oszczędzasz</span> z Kramp.
+            <span className="text-kramp-turquoise">you save</span> with Kramp.
           </h1>
           <p className="mt-2 text-[13.5px] leading-snug text-white/85 max-w-[300px]">
-            Kilka liczb z Twojego sklepu. Jasna odpowiedź w niecałą minutę.{" "}
-            <span className="font-semibold">To takie proste.</span>
+            Four short steps. Real numbers from your shop. A clear answer in
+            under a minute.{" "}
+            <span className="font-semibold">It's that easy.</span>
           </p>
         </div>
 
@@ -76,7 +77,7 @@ export default function HeroSlide({ onStart }: Props) {
           onClick={onStart}
           className="flex-none w-full h-12 rounded-2xl bg-white text-kramp-red font-display font-bold uppercase tracking-wide text-[15px] shadow-lg active:scale-[0.99] hover:bg-white/95 transition-transform flex items-center justify-center gap-2"
         >
-          Rozpocznij kalkulację
+          Start the calculation
           <svg viewBox="0 0 20 20" className="w-5 h-5" fill="none">
             <path
               d="M5 10h10m-4-4 4 4-4 4"
@@ -89,7 +90,7 @@ export default function HeroSlide({ onStart }: Props) {
         </button>
 
         <p className="text-[10.5px] text-white/70 text-center mt-2.5 leading-snug">
-          Jeden ekran danych · Pełny raport na końcu
+          Swipe through 4 modules · Full report at the end
         </p>
       </div>
     </div>
