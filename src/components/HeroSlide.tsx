@@ -60,14 +60,14 @@ export default function HeroSlide({ onStart }: Props) {
         {/* Hero copy */}
         <div className="flex-none mb-5">
           <h1 className="font-display text-[32px] leading-[1.02] font-bold uppercase tracking-tight">
-            Show how much
+            Pokaż ile
             <br />
-            <span className="text-kramp-turquoise">you save</span> with Kramp.
+            <span className="text-kramp-turquoise">oszczędzasz</span> z Krampem.
           </h1>
           <p className="mt-2 text-[13.5px] leading-snug text-white/85 max-w-[300px]">
-            Four short steps. Real numbers from your shop. A clear answer in
-            under a minute.{" "}
-            <span className="font-semibold">It's that easy.</span>
+            Cztery krótkie kroki. Konkretne liczby z Twojego sklepu. Wynik w
+            niespełna minutę.{" "}
+            <span className="font-semibold">To takie proste.</span>
           </p>
         </div>
 
@@ -77,7 +77,7 @@ export default function HeroSlide({ onStart }: Props) {
           onClick={onStart}
           className="flex-none w-full h-12 rounded-2xl bg-white text-kramp-red font-display font-bold uppercase tracking-wide text-[15px] shadow-lg active:scale-[0.99] hover:bg-white/95 transition-transform flex items-center justify-center gap-2"
         >
-          Start the calculation
+          Rozpocznij kalkulację
           <svg viewBox="0 0 20 20" className="w-5 h-5" fill="none">
             <path
               d="M5 10h10m-4-4 4 4-4 4"
@@ -90,7 +90,7 @@ export default function HeroSlide({ onStart }: Props) {
         </button>
 
         <p className="text-[10.5px] text-white/70 text-center mt-2.5 leading-snug">
-          Swipe through 4 modules · Full report at the end
+          Przesuwaj przez 4 moduły · Pełny raport na końcu
         </p>
       </div>
     </div>

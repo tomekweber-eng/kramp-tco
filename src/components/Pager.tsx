@@ -102,7 +102,7 @@ export function PagerNav({
     <div className="flex items-center justify-between gap-2 px-3 py-2">
       <button
         type="button"
-        aria-label="Previous"
+        aria-label="Poprzedni"
         onClick={onPrev}
         disabled={!canPrev}
         className={[
@@ -123,7 +123,7 @@ export function PagerNav({
             <button
               key={i}
               type="button"
-              aria-label={`Go to page ${i + 1}`}
+              aria-label={`Przejdź do strony ${i + 1}`}
               onClick={() => onJump(i)}
               className={[
                 "h-2 rounded-full transition-all duration-200",
@@ -142,7 +142,7 @@ export function PagerNav({
 
       <button
         type="button"
-        aria-label="Next"
+        aria-label="Następny"
         onClick={onNext}
         disabled={!canNext}
         className={[

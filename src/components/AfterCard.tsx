@@ -9,7 +9,7 @@ export default function AfterCard({ children }: { children: ReactNode }) {
       />
       <div className="flex items-center gap-2 mb-2 pl-0.5">
         <span className="inline-flex h-5 px-2 items-center rounded-full bg-kramp-red text-[10px] font-bold uppercase tracking-wider text-white">
-          After Kramp
+          Po Kramp
         </span>
       </div>
       <div className="grid gap-2 pl-0.5">{children}</div>

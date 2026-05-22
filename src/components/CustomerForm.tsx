@@ -22,42 +22,42 @@ export default function CustomerForm({
       <div className="flex items-center gap-2 mb-3">
         <span className="inline-flex h-6 px-2 items-center rounded-full bg-kramp-red text-[11px] font-bold uppercase tracking-wider text-white gap-1">
           <Lock />
-          Final step
+          Ostatni krok
         </span>
         <span className="text-[12px] text-kramp-blue/55 font-medium">
-          Unlock the summary
+          Odblokuj podsumowanie
         </span>
       </div>
 
       <h1 className="font-display text-[26px] font-bold uppercase tracking-tight text-kramp-blue leading-[1.05] mb-1.5">
-        Almost there.
+        Już prawie.
         <br />
-        <span className="text-kramp-red">Where shall we send it?</span>
+        <span className="text-kramp-red">Gdzie mamy to wysłać?</span>
       </h1>
       <p className="text-[13px] leading-snug text-kramp-blue/65 mb-4">
-        Enter your details and we'll show you the full TCO report — with charts,
-        per-module impact and a printable one-pager.
+        Wpisz dane, a pokażemy pełny raport TCO — z wykresami, wpływem każdego
+        modułu i wersją do druku.
       </p>
 
       <div className="grid gap-2.5">
         <Input
-          label="Customer / shop name"
+          label="Klient / nazwa sklepu"
           value={customer.name}
           onChange={upd("name")}
-          placeholder="e.g. Smith Farm Equipment"
+          placeholder="np. Gospodarstwo Kowalski"
           autoComplete="organization"
         />
         <Input
           label="Email"
           value={customer.email}
           onChange={upd("email")}
-          placeholder="contact@shop.com"
+          placeholder="kontakt@sklep.pl"
           type="email"
           autoComplete="email"
           inputMode="email"
         />
         <Input
-          label="Postal code"
+          label="Kod pocztowy"
           value={customer.postalCode}
           onChange={upd("postalCode")}
           placeholder="00-000"
@@ -79,7 +79,7 @@ export default function CustomerForm({
         >
           {isValid ? (
             <>
-              Show my savings
+              Pokaż moje oszczędności
               <svg viewBox="0 0 20 20" className="w-5 h-5" fill="none">
                 <path
                   d="M5 10h10m-4-4 4 4-4 4"
@@ -91,11 +91,11 @@ export default function CustomerForm({
               </svg>
             </>
           ) : (
-            "Fill in all fields"
+            "Uzupełnij wszystkie pola"
           )}
         </button>
         <p className="text-[10.5px] text-center text-kramp-blue/45 mt-2 leading-snug">
-          We never share your data. This is a sales demo tool.
+          Nie udostępniamy Twoich danych. To narzędzie demonstracyjne dla handlowców.
         </p>
       </div>
     </div>

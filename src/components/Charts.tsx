@@ -93,13 +93,13 @@ export function RevSavDonut({
       <div className="grid gap-1.5 min-w-0 flex-1">
         <Legend
           color="var(--color-kramp-red)"
-          label="Extra revenue"
+          label="Dodatkowy przychód"
           value={revenue}
           pct={(revenue / total) * 100}
         />
         <Legend
           color="var(--color-kramp-success)"
-          label="Cost savings"
+          label="Oszczędności kosztów"
           value={savings}
           pct={(savings / total) * 100}
         />
@@ -155,7 +155,7 @@ export function HoursSavedBar({
     <div className="rounded-xl bg-kramp-blue/[0.04] border border-kramp-blue/10 px-3 py-2.5">
       <div className="flex items-baseline justify-between mb-1.5">
         <span className="text-[10.5px] font-bold uppercase tracking-wider text-kramp-blue/65">
-          Hours saved per year
+          Zaoszczędzone godziny / rok
         </span>
         <span className="font-display text-[15px] font-bold tabular-nums text-kramp-blue">
           {total.toFixed(1)} h
@@ -165,21 +165,21 @@ export function HoursSavedBar({
         <div
           className="h-full bg-kramp-red"
           style={{ width: `${pct1}%` }}
-          title={`Meetings — ${m1Hours.toFixed(1)} h`}
+          title={`Spotkania — ${m1Hours.toFixed(1)} h`}
         />
         <div
           className="h-full bg-kramp-blue"
           style={{ width: `${100 - pct1}%` }}
-          title={`Order process — ${m2Hours.toFixed(1)} h`}
+          title={`Proces zamawiania — ${m2Hours.toFixed(1)} h`}
         />
       </div>
       <div className="flex justify-between mt-1.5 text-[10px] text-kramp-blue/55">
         <span className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-sm bg-kramp-red" /> Meetings{" "}
+          <span className="w-2 h-2 rounded-sm bg-kramp-red" /> Spotkania{" "}
           {m1Hours.toFixed(1)} h
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-sm bg-kramp-blue" /> Orders{" "}
+          <span className="w-2 h-2 rounded-sm bg-kramp-blue" /> Zamówienia{" "}
           {m2Hours.toFixed(1)} h
         </span>
       </div>
@@ -189,10 +189,8 @@ export function HoursSavedBar({
 
 function fmt(n: number) {
   const abs = Math.abs(n);
-  const formatted = new Intl.NumberFormat("en-GB", {
+  const formatted = new Intl.NumberFormat("pl-PL", {
     maximumFractionDigits: 0,
-  })
-    .format(Math.round(abs))
-    .replace(/,/g, " ");
+  }).format(Math.round(abs));
   return `${formatted} €`;
 }
