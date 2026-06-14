@@ -164,13 +164,33 @@ export default function SummarySlide({ results, customer }: Props) {
           korzyść zależy od zakresu konsolidacji ustalonego z Kramp.
         </p>
 
-        <button
-          type="button"
-          onClick={() => window.print()}
-          className="no-print w-full h-11 rounded-xl bg-kramp-blue text-white font-display font-bold uppercase tracking-wide text-[14px] hover:bg-kramp-blue/90 active:scale-[0.99]"
-        >
-          Pobierz raport PDF
-        </button>
+        <div className="no-print grid gap-2">
+          {/* TODO: docelowy URL umawiania rozmowy z doradcą Kramp */}
+          <a
+            href="https://www.kramp.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full h-11 rounded-xl bg-kramp-red text-white font-display font-bold uppercase tracking-wide text-[14px] hover:bg-kramp-red-dark active:scale-[0.99] flex items-center justify-center gap-2"
+          >
+            Umów rozmowę z doradcą
+            <svg viewBox="0 0 20 20" className="w-5 h-5" fill="none">
+              <path
+                d="M5 10h10m-4-4 4 4-4 4"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </a>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="w-full h-11 rounded-xl bg-kramp-blue text-white font-display font-bold uppercase tracking-wide text-[14px] hover:bg-kramp-blue/90 active:scale-[0.99]"
+          >
+            Pobierz raport PDF
+          </button>
+        </div>
       </div>
     </div>
   );
