@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { neon } from "@neondatabase/serverless";
+import type { ReportData } from "./report.js";
 
 /**
  * POST /api/lead
@@ -32,7 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     consentRodo?: boolean;
     consentMarketing?: boolean;
     inputs?: unknown;
-    results?: { net_benefit?: number } | null;
+    results?: ReportData["results"] | null;
   };
 
   const company = body.company?.trim();
@@ -87,6 +88,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
          ${netBenefit}, ${!!body.consentRodo}, ${!!body.consentMarketing},
          ${ip}, ${userAgent})
     `;
+
+    // Dormant until RESEND_API_KEY is configured. Email failure must never
+    // break lead capture, so it is best-effort and logged only.
+    const resendKey = process.env.RESEND_API_KEY;
+    if (resendKey && body.results) {
+      try {
+        const data: ReportData = {
+          customer: { name: company, email, postalCode },
+          results: body.results,
+          date: new Date().toLocaleDateString("pl-PL", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          }),
+        };
+        // Dynamic import keeps @react-pdf/renderer out of the cold-start path
+        // while the mailer is dormant.
+        const { sendReportEmail } = await import("./email.js");
+        await sendReportEmail(data, {
+          apiKey: resendKey,
+          from: process.env.REPORT_FROM || "Kramp <onboarding@resend.dev>",
+          bcc: process.env.REPORT_BCC || undefined,
+        });
+      } catch (mailErr) {
+        console.error("report email failed (lead still saved):", mailErr);
+      }
+    }
 
     res.status(200).json({ ok: true });
   } catch (err) {
