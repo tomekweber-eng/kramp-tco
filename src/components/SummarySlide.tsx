@@ -15,6 +15,15 @@ export default function SummarySlide({ results, customer }: Props) {
     year: "numeric",
   });
 
+  // Highlight the module that contributes the most.
+  const levers = [
+    { name: "Spotkania z dostawcami", value: results.m1.revenue },
+    { name: "Proces zamawiania", value: results.m2.revenue },
+    { name: "Amortyzacja zapasów", value: results.m3.savings },
+    { name: "Transport", value: results.m4.savings },
+  ];
+  const topLever = levers.reduce((a, b) => (b.value > a.value ? b : a));
+
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Brand header */}
@@ -56,6 +65,21 @@ export default function SummarySlide({ results, customer }: Props) {
           </div>
           <div className="text-[10.5px] opacity-85 mt-1">
             Rocznie, przy zaprezentowanym modelu konsolidacji
+          </div>
+        </div>
+
+        {/* Biggest lever */}
+        <div className="rounded-2xl bg-kramp-turquoise-tint border border-kramp-turquoise/30 px-3.5 py-2.5 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-kramp-blue/55">
+              Największy potencjał
+            </div>
+            <div className="font-display text-[15px] font-bold text-kramp-blue truncate leading-tight">
+              {topLever.name}
+            </div>
+          </div>
+          <div className="font-display text-[15px] font-bold tabular-nums text-kramp-blue whitespace-nowrap">
+            {money(Math.abs(topLever.value))}
           </div>
         </div>
 
@@ -129,7 +153,7 @@ export default function SummarySlide({ results, customer }: Props) {
           />
           <Row
             label="4. Transport"
-            sub="Skonsolidowany fracht"
+            sub="Skonsolidowany transport"
             value={money(Math.abs(results.m4.savings))}
             tone={results.m4.savings >= 0 ? "savings" : "neutral"}
           />
@@ -145,7 +169,7 @@ export default function SummarySlide({ results, customer }: Props) {
           onClick={() => window.print()}
           className="no-print w-full h-11 rounded-xl bg-kramp-blue text-white font-display font-bold uppercase tracking-wide text-[14px] hover:bg-kramp-blue/90 active:scale-[0.99]"
         >
-          Drukuj jednostronicowy raport
+          Pobierz raport PDF
         </button>
       </div>
     </div>

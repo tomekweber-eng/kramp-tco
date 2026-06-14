@@ -21,7 +21,7 @@ export type Inputs = {
   a_pct_depr: number;
 
   // Module 4
-  b_transport_cost: number;
+  b_cost_per_parcel: number; // średni koszt transportu jednej paczki dziś
   b_pct_kramp: number;
   a_pct_kramp: number;
   kramp_freight: number;
@@ -36,7 +36,8 @@ export const DEFAULTS: Inputs = {
   a_meetings: 4,
   b_duration: 1,
   a_duration: 1,
-  turnover_per_hour: 200,
+  // Kwoty przeliczone z EUR po kursie 4,30 zł/€ i zapisane na stałe (PLN).
+  turnover_per_hour: 860, // było 200 €/h
 
   // Module 2
   orders_per_year: 1175,
@@ -44,18 +45,19 @@ export const DEFAULTS: Inputs = {
   b_time_treat: 14,
 
   // Module 3
-  b_stock_value: 1_000_000,
+  b_stock_value: 4_300_000, // było 1 000 000 €
   b_pct_depr: 15,
   b_depr_level: 25,
   stock_reduction: 20,
   a_pct_depr: 15,
 
-  // Module 4
-  b_transport_cost: 20_000,
+  // Module 4 — roczny koszt liczony jako b_cost_per_parcel × orders_per_year.
+  // 73 zł × 1175 ≈ 86 000 zł (poprzedni roczny domyślny koszt transportu).
+  b_cost_per_parcel: 73,
   b_pct_kramp: 10,
   a_pct_kramp: 20,
-  kramp_freight: 20,
-  a_avg_carriage_other: 17.5,
+  kramp_freight: 86, // było 20 €
+  a_avg_carriage_other: 75.25, // było 17,5 €
 };
 
 export type Results = {
@@ -82,6 +84,7 @@ export type Results = {
     savings: number;
   };
   m4: {
+    cost_before: number; // roczny koszt transportu dziś (auto z liczby paczek)
     kramp_before: number;
     kramp_after: number;
     other_before: number;
@@ -92,6 +95,7 @@ export type Results = {
   };
   total_revenue: number;
   total_savings: number;
+  total_hours_saved: number;
   net_benefit: number;
 };
 
@@ -129,20 +133,23 @@ export function compute(i: Inputs): Results {
   const m3_savings = m3_before_depr - m3_after_depr;
 
   // Module 4 — Transport
+  // Roczny koszt dziś = średni koszt paczki × liczba zamówień (z modułu 2).
+  const m4_cost_before = i.b_cost_per_parcel * m2_before_orders;
   const kramp_before = m2_before_orders * pct(i.b_pct_kramp);
   const kramp_after = m2_after_orders * pct(i.a_pct_kramp);
   const other_before = m2_before_orders - kramp_before;
   const other_after = m2_after_orders - kramp_after;
   const avg_carriage_before =
     other_before > 0
-      ? (i.b_transport_cost - kramp_before * i.kramp_freight) / other_before
+      ? (m4_cost_before - kramp_before * i.kramp_freight) / other_before
       : 0;
   const cost_after =
     kramp_after * i.kramp_freight + other_after * i.a_avg_carriage_other;
-  const m4_savings = i.b_transport_cost - cost_after;
+  const m4_savings = m4_cost_before - cost_after;
 
   const total_revenue = m1_revenue + m2_revenue;
   const total_savings = m3_savings + m4_savings;
+  const total_hours_saved = m1_hours_saved + m2_hours_saved;
   const net_benefit = total_revenue + total_savings;
 
   return {
@@ -169,6 +176,7 @@ export function compute(i: Inputs): Results {
       savings: safe(m3_savings),
     },
     m4: {
+      cost_before: safe(m4_cost_before),
       kramp_before: safe(kramp_before),
       kramp_after: safe(kramp_after),
       other_before: safe(other_before),
@@ -179,6 +187,7 @@ export function compute(i: Inputs): Results {
     },
     total_revenue: safe(total_revenue),
     total_savings: safe(total_savings),
+    total_hours_saved: safe(total_hours_saved),
     net_benefit: safe(net_benefit),
   };
 }

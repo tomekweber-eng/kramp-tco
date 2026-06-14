@@ -192,5 +192,5 @@ function fmt(n: number) {
   const formatted = new Intl.NumberFormat("pl-PL", {
     maximumFractionDigits: 0,
   }).format(Math.round(abs));
-  return `${formatted} €`;
+  return `${formatted} zł`;
 }

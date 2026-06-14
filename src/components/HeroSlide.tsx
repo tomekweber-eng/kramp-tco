@@ -34,7 +34,7 @@ export default function HeroSlide({ onStart }: Props) {
         {/* Tiny top label */}
         <div className="flex items-center gap-2 flex-none">
           <span className="inline-flex h-6 px-2.5 items-center rounded-full bg-white/15 backdrop-blur-sm text-[10.5px] font-bold uppercase tracking-wider">
-            TCO Calculator
+            Kalkulator oszczędności
           </span>
           <span className="text-[10.5px] uppercase tracking-[0.2em] font-semibold opacity-75">
             v1.0
@@ -58,16 +58,16 @@ export default function HeroSlide({ onStart }: Props) {
         </div>
 
         {/* Hero copy */}
-        <div className="flex-none mb-5">
-          <h1 className="font-display text-[32px] leading-[1.02] font-bold uppercase tracking-tight">
-            Pokaż ile
+        <div className="flex-none mb-4">
+          <h1 className="font-display text-[30px] leading-[1.04] font-bold uppercase tracking-tight">
+            Przekonaj się,
             <br />
-            <span className="text-kramp-turquoise">oszczędzasz</span> z Krampem.
+            ile <span className="text-kramp-turquoise">zaoszczędzisz</span> z
+            Kramp.
           </h1>
-          <p className="mt-2 text-[13.5px] leading-snug text-white/85 max-w-[300px]">
-            Cztery krótkie kroki. Konkretne liczby z Twojego sklepu. Wynik w
-            niespełna minutę.{" "}
-            <span className="font-semibold">To takie proste.</span>
+          <p className="mt-2 text-[13.5px] leading-snug text-white/85 max-w-[310px]">
+            Odpowiedz na kilka pytań i zobacz, gdzie możesz odzyskać czas,
+            ograniczyć koszty i usprawnić codzienną pracę.
           </p>
         </div>
 
@@ -77,7 +77,7 @@ export default function HeroSlide({ onStart }: Props) {
           onClick={onStart}
           className="flex-none w-full h-12 rounded-2xl bg-white text-kramp-red font-display font-bold uppercase tracking-wide text-[15px] shadow-lg active:scale-[0.99] hover:bg-white/95 transition-transform flex items-center justify-center gap-2"
         >
-          Rozpocznij kalkulację
+          Policz swoje oszczędności
           <svg viewBox="0 0 20 20" className="w-5 h-5" fill="none">
             <path
               d="M5 10h10m-4-4 4 4-4 4"
@@ -89,9 +89,24 @@ export default function HeroSlide({ onStart }: Props) {
           </svg>
         </button>
 
-        <p className="text-[10.5px] text-white/70 text-center mt-2.5 leading-snug">
-          Przesuwaj przez 4 moduły · Pełny raport na końcu
-        </p>
+        <ul className="flex flex-wrap items-center justify-center gap-x-3.5 gap-y-1 text-[10.5px] text-white/75 mt-2.5">
+          {["około 2 minuty", "tylko kilka danych", "raport PDF na końcu"].map(
+            (t) => (
+              <li key={t} className="inline-flex items-center gap-1">
+                <svg viewBox="0 0 16 16" className="w-3 h-3" fill="none">
+                  <path
+                    d="M3 8.5l3 3 7-7"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                {t}
+              </li>
+            ),
+          )}
+        </ul>
       </div>
     </div>
   );

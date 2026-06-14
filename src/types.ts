@@ -4,7 +4,13 @@ export type Customer = {
   postalCode: string;
 };
 
+export const isNameValid = (s: string) => s.trim().length > 1;
+
+export const isEmailValid = (s: string) =>
+  /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(s.trim());
+
+// Polish postal code: NN-NNN
+export const isPostalValid = (s: string) => /^\d{2}-\d{3}$/.test(s.trim());
+
 export const isCustomerValid = (c: Customer) =>
-  c.name.trim().length > 1 &&
-  /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(c.email.trim()) &&
-  c.postalCode.trim().length >= 2;
+  isNameValid(c.name) && isEmailValid(c.email) && isPostalValid(c.postalCode);

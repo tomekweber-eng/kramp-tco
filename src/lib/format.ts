@@ -1,9 +1,11 @@
-const eur = new Intl.NumberFormat("pl-PL", {
+// pl-PL grouping uses a non-breaking space by default, so amounts like
+// "4 300 000 zł" already render without wrapping mid-number.
+const pln = new Intl.NumberFormat("pl-PL", {
   maximumFractionDigits: 0,
   useGrouping: true,
 });
 
-const eur1 = new Intl.NumberFormat("pl-PL", {
+const pln1 = new Intl.NumberFormat("pl-PL", {
   maximumFractionDigits: 1,
   useGrouping: true,
 });
@@ -13,16 +15,14 @@ const num1 = new Intl.NumberFormat("pl-PL", {
   useGrouping: true,
 });
 
-export const money = (n: number) =>
-  `${eur.format(Math.round(n)).replace(/ /g, " ")} €`;
+export const money = (n: number) => `${pln.format(Math.round(n))} zł`;
 
 export const moneySigned = (n: number) => {
   const v = money(Math.abs(n));
   return n < 0 ? `−${v}` : v;
 };
 
-export const moneyFine = (n: number) =>
-  `${eur1.format(n).replace(/ /g, " ")} €`;
+export const moneyFine = (n: number) => `${pln1.format(n)} zł`;
 
 export const hours = (n: number) => `${num1.format(n)} h`;
 

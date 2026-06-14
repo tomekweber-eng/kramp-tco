@@ -5,6 +5,7 @@ type Props = {
   index: number;
   title: string;
   subtitle: string;
+  why?: string;
   children: ReactNode;
   hoursSaved?: number;
   impact: number;
@@ -15,6 +16,7 @@ export default function ModuleSlide({
   index,
   title,
   subtitle,
+  why,
   children,
   hoursSaved,
   impact,
@@ -36,6 +38,14 @@ export default function ModuleSlide({
           </div>
         </div>
       </div>
+
+      {/* "Why we ask" microcopy */}
+      {why && (
+        <p className="flex-none -mt-1 mb-2 text-[11px] leading-snug text-kramp-blue/55">
+          <span className="font-bold text-kramp-blue/70">Dlaczego pytamy? </span>
+          {why}
+        </p>
+      )}
 
       {/* Inputs area — scrolls vertically only if content really overflows */}
       <div className="flex-1 min-h-0 overflow-y-auto -mx-1 px-1 grid gap-2.5 content-start">
