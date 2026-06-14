@@ -23,6 +23,11 @@ The frontend (`/dist`) is a static bundle. The lead funnel adds Vercel serverles
 
 Copy `.env.example` → `.env` for local `vercel dev`. On Vercel the Neon integration provides `DATABASE_URL`; add `RESEND_API_KEY` (+ optional `REPORT_FROM`, `REPORT_BCC`) to activate e-mail.
 
+## Docs
+
+- [`docs/OVERVIEW.md`](docs/OVERVIEW.md) — full app reference (flow, calc model, data model, status).
+- [`RESEND_SETUP.md`](RESEND_SETUP.md) — how to activate the report e-mail.
+
 ## Brand
 
 Colours, typography and tone follow the Kramp Brandbook v1.0 (Red `#af000f`, Dark blue `#121f32`, Turquoise `#65b994`; Barlow Condensed Bold for titles, Barlow for body).

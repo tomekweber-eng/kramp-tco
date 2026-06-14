@@ -107,6 +107,11 @@ export default function HeroSlide({ onStart }: Props) {
             ),
           )}
         </ul>
+
+        <p className="text-[9.5px] leading-snug text-white/55 text-center mt-2.5 max-w-[330px] mx-auto">
+          Wyniki mają charakter orientacyjny — bazują na podanych danych i
+          średnich rynkowych.
+        </p>
       </div>
     </div>
   );

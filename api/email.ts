@@ -16,21 +16,44 @@ const fmtHours = (n: number) =>
 
 function html(data: ReportData): string {
   const { customer, results } = data;
+  // Brand CVI v1.0 colours (match src/index.css).
+  const RED = "#af000f";
+  const BLUE = "#121f32";
+
+  const levers = [
+    { name: "Spotkania z dostawcami", value: results.m1.revenue },
+    { name: "Proces zamawiania", value: results.m2.revenue },
+    { name: "Amortyzacja zapasów", value: results.m3.savings },
+    { name: "Transport", value: results.m4.savings },
+  ];
+  const top = levers.reduce((a, b) => (b.value > a.value ? b : a));
+
   return `
-  <div style="font-family:Arial,Helvetica,sans-serif;color:#121f32;max-width:560px;margin:0 auto">
-    <div style="background:#e2001a;color:#fff;padding:18px 20px;border-radius:8px">
+  <div style="font-family:Arial,Helvetica,sans-serif;color:${BLUE};max-width:560px;margin:0 auto">
+    <div style="background:${RED};color:#fff;padding:18px 20px;border-radius:8px">
       <div style="font-size:18px;font-weight:bold">Kramp · Raport oszczędności</div>
     </div>
     <p style="font-size:15px">Dzień dobry${customer.name ? ", " + customer.name : ""},</p>
     <p style="font-size:14px;line-height:1.5">
-      w załączniku znajdziesz pełny raport oszczędności. Poniżej skrót wyliczeń:
+      w załączniku znajdziesz pełny raport oszczędności w PDF. Poniżej skrót wyliczeń:
     </p>
-    <div style="background:#121f32;color:#fff;padding:18px 20px;border-radius:8px;margin:16px 0">
-      <div style="font-size:11px;text-transform:uppercase;opacity:.8">Roczna korzyść netto</div>
-      <div style="font-size:30px;font-weight:bold">${fmtMoney(results.net_benefit)}</div>
-      <div style="font-size:12px;opacity:.85;margin-top:4px">Odzyskany czas: ${fmtHours(
-        results.total_hours_saved,
-      )} / rok</div>
+    <table role="presentation" width="100%" style="border-collapse:separate;border-spacing:0 8px;margin:8px 0">
+      <tr>
+        <td style="background:${RED};color:#fff;padding:16px 18px;border-radius:8px;width:50%" valign="top">
+          <div style="font-size:11px;text-transform:uppercase;opacity:.85">Roczna korzyść netto</div>
+          <div style="font-size:26px;font-weight:bold">${fmtMoney(results.net_benefit)}</div>
+        </td>
+        <td style="width:10px"></td>
+        <td style="background:${BLUE};color:#fff;padding:16px 18px;border-radius:8px;width:50%" valign="top">
+          <div style="font-size:11px;text-transform:uppercase;opacity:.85">Odzyskany czas / rok</div>
+          <div style="font-size:26px;font-weight:bold">${fmtHours(results.total_hours_saved)}</div>
+        </td>
+      </tr>
+    </table>
+    <div style="background:#eaf3ef;border-left:3px solid #65b994;padding:12px 16px;border-radius:4px;margin:8px 0">
+      <span style="font-size:11px;text-transform:uppercase;color:#6b7280">Największy potencjał:</span>
+      <strong style="font-size:14px"> ${top.name}</strong>
+      <span style="float:right;font-weight:bold">${fmtMoney(Math.abs(top.value))}</span>
     </div>
     <p style="font-size:13px;font-weight:bold;text-transform:uppercase;color:#6b7280;margin-bottom:6px">
       Co wpływa na wynik
@@ -41,7 +64,7 @@ function html(data: ReportData): string {
       <li>Redukcja stanów magazynowych</li>
       <li>Optymalizacja dostaw</li>
     </ul>
-    <a href="https://www.kramp.com/" style="display:inline-block;background:#e2001a;color:#fff;text-decoration:none;font-weight:bold;padding:12px 22px;border-radius:8px;margin:12px 0">
+    <a href="https://www.kramp.com/" style="display:inline-block;background:${RED};color:#fff;text-decoration:none;font-weight:bold;padding:12px 22px;border-radius:8px;margin:12px 0">
       Porozmawiaj z doradcą Kramp
     </a>
     <p style="font-size:11px;color:#9ca3af;line-height:1.5;margin-top:20px">
