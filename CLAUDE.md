@@ -34,12 +34,15 @@ Pełna referencja: [`docs/OVERVIEW.md`](docs/OVERVIEW.md). Tu tylko pułapki prz
 - **`api/lead.ts` szuka connection stringa pod kilkoma nazwami** (`DATABASE_URL` → `POSTGRES_URL` → …);
   tabela `leads` tworzona `CREATE TABLE IF NOT EXISTS` przy 1. zapisie. Mail to best-effort try/catch
   (błąd maila nigdy nie psuje zapisu leada). PDF importowany dynamicznie, by nie obciążać cold-startu.
-- **Raport PDF: [`api/report.ts`](api/report.ts)** = 3-stronicowy raport (str.1 streszczenie · str.2 cztery dźwignie
-  „Co liczymy → Skąd → Ile → Dlaczego" z słupkami przed/po · str.3 założenia + metodyka + CTA). Renderuje z **pełnych
-  `inputs` + `results`** (oba muszą dotrzeć z `/api/lead`). Fixed header (logo z [`api/logo.ts`](api/logo.ts) jako
-  base64 + claim „To takie proste.") i stopka z danymi kontaktowymi powtarzają się na każdej stronie. Copy pisane
-  pod **brandbook Kramp** (2. osoba, zwięźle, partnersko, bez nachalnej sprzedaży). Trzymanie się 3 stron zależy od
-  zwartości bloków — zmiana copy/odstępów może przerzucić treść na 4. stronę (sprawdź renderem).
+- **Raport PDF: [`api/report.ts`](api/report.ts)** = 4-stronicowy raport (str.1 streszczenie · str.2–3 cztery dźwignie,
+  **2 na stronę**, „Co liczymy → Skąd → Ile → Dlaczego" ze słupkami przed/po · str.4 założenia + metodyka + CTA).
+  Renderuje z **pełnych `inputs` + `results`** (oba muszą dotrzeć z `/api/lead`). Fixed header (logo z
+  [`api/logo.ts`](api/logo.ts) jako base64 + claim „To takie proste.") i stopka z danymi kontaktowymi powtarzają się
+  na każdej stronie. Copy pod **brandbook Kramp** (2. osoba, zwięźle, partnersko). Paginacja sterowana
+  `break`/`wrap:false` — przy zmianie copy/odstępów sprawdź liczbę stron renderem.
+- **Mail [`api/email.ts`](api/email.ts):** białe tło, panele z obramowaniem (bez wypełnień), header z logo i stopka
+  jak w PDF. Logo z URL `REPORT_SITE_URL`/hero-kramp.png ([`public/hero-kramp.png`](public/hero-kramp.png)) — klienty
+  pocztowe blokują obrazki data-URI. Wysyłka przez **Resend** (gdy `RESEND_API_KEY`).
 - **TODO do podmiany** (oznaczone w kodzie): URL „Umów rozmowę z doradcą" w `SummarySlide.tsx` i `api/email.ts`
   tymczasowo linkuje do `kramp.com`; dane kontaktowe Kramp w stopce PDF (`CONTACT` w `api/report.ts`) to publiczne
   dane ze strony — **zweryfikować przed wysyłką na żywo**.
