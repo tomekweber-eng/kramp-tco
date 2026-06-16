@@ -1,14 +1,51 @@
-import { hours, money } from "../lib/format";
-import type { Results } from "../lib/compute";
+import { useState } from "react";
+import { money } from "../lib/format";
+import type { Inputs, Results } from "../lib/compute";
 import type { Customer } from "../types";
 import { HoursSavedBar, ImpactBars, RevSavDonut } from "./Charts";
 
 type Props = {
   results: Results;
   customer: Customer;
+  inputs: Inputs;
 };
 
-export default function SummarySlide({ results, customer }: Props) {
+export default function SummarySlide({ results, customer, inputs }: Props) {
+  const [downloading, setDownloading] = useState(false);
+
+  // Render the 3-page PDF server-side, then open it (display) and download it.
+  // Falls back to the browser print dialog when /api is unavailable (plain
+  // Vite dev), so the demo never dead-ends on this button.
+  async function downloadPdf() {
+    if (downloading) return;
+    setDownloading(true);
+    try {
+      const resp = await fetch("/api/report-pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customer, inputs, results }),
+      });
+      if (!resp.ok) throw new Error(`status ${resp.status}`);
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      // Trigger a download (reliable across browsers)…
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "raport-kramp.pdf";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      // …and open it in a new tab for immediate viewing.
+      window.open(url, "_blank");
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch {
+      // No backend (e.g. `npm run dev`): fall back to printing the summary.
+      window.print();
+    } finally {
+      setDownloading(false);
+    }
+  }
+
   const today = new Date().toLocaleDateString("pl-PL", {
     day: "numeric",
     month: "short",
@@ -131,34 +168,6 @@ export default function SummarySlide({ results, customer }: Props) {
           m2Hours={results.m2.hours_saved}
         />
 
-        {/* Per-module breakdown */}
-        <div className="grid gap-1.5">
-          <Row
-            label="1. Spotkania z dostawcami"
-            sub={`${hours(results.m1.hours_saved)} zaoszczędzone`}
-            value={money(results.m1.revenue)}
-            tone="revenue"
-          />
-          <Row
-            label="2. Proces zamawiania"
-            sub={`${hours(results.m2.hours_saved)} zaoszczędzone`}
-            value={money(results.m2.revenue)}
-            tone="revenue"
-          />
-          <Row
-            label="3. Amortyzacja zapasów"
-            sub="Niższy odpis zapasów"
-            value={money(Math.abs(results.m3.savings))}
-            tone={results.m3.savings >= 0 ? "savings" : "neutral"}
-          />
-          <Row
-            label="4. Transport"
-            sub="Skonsolidowany transport"
-            value={money(Math.abs(results.m4.savings))}
-            tone={results.m4.savings >= 0 ? "savings" : "neutral"}
-          />
-        </div>
-
         <p className="text-[10.5px] leading-relaxed text-kramp-blue/55">
           Wartości orientacyjne na podstawie wprowadzonych danych. Ostateczna
           korzyść zależy od zakresu konsolidacji ustalonego z Kramp.
@@ -185,10 +194,11 @@ export default function SummarySlide({ results, customer }: Props) {
           </a>
           <button
             type="button"
-            onClick={() => window.print()}
-            className="w-full h-11 rounded-xl bg-kramp-blue text-white font-display font-bold uppercase tracking-wide text-[14px] hover:bg-kramp-blue/90 active:scale-[0.99]"
+            onClick={downloadPdf}
+            disabled={downloading}
+            className="w-full h-11 rounded-xl bg-kramp-blue text-white font-display font-bold uppercase tracking-wide text-[14px] hover:bg-kramp-blue/90 active:scale-[0.99] disabled:opacity-60"
           >
-            Pobierz raport PDF
+            {downloading ? "Generowanie…" : "Pobierz raport PDF"}
           </button>
         </div>
       </div>
@@ -196,37 +206,3 @@ export default function SummarySlide({ results, customer }: Props) {
   );
 }
 
-function Row({
-  label,
-  sub,
-  value,
-  tone,
-}: {
-  label: string;
-  sub: string;
-  value: string;
-  tone: "revenue" | "savings" | "neutral";
-}) {
-  return (
-    <div className="flex items-center justify-between gap-3 rounded-xl bg-white border border-kramp-blue/10 px-3 py-2">
-      <div className="min-w-0">
-        <div className="font-semibold text-kramp-blue text-[13px] truncate">
-          {label}
-        </div>
-        <div className="text-[10.5px] text-kramp-blue/55 truncate">{sub}</div>
-      </div>
-      <div
-        className={[
-          "font-display text-[15px] font-bold tabular-nums whitespace-nowrap",
-          tone === "savings"
-            ? "text-kramp-success"
-            : tone === "revenue"
-              ? "text-kramp-red"
-              : "text-kramp-blue",
-        ].join(" ")}
-      >
-        {value}
-      </div>
-    </div>
-  );
-}

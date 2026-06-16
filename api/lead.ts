@@ -96,6 +96,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       try {
         const data: ReportData = {
           customer: { name: company, email, postalCode },
+          inputs: body.inputs as ReportData["inputs"],
           results: body.results,
           date: new Date().toLocaleDateString("pl-PL", {
             day: "numeric",

@@ -37,9 +37,9 @@ export default function Field({
       : "focus-within:ring-kramp-blue/30";
 
   return (
-    <label className="block">
-      <span className="flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-wider text-kramp-blue/70 mb-0.5">
-        <span className="flex-1 truncate">{label}</span>
+    <label className="flex flex-col">
+      <span className="flex flex-1 items-start gap-1.5 text-[10.5px] font-bold uppercase tracking-wider text-kramp-blue/70 mb-0.5">
+        <span className="flex-1 leading-tight">{label}</span>
         {autoBadge && (
           <span className="text-[9px] font-bold uppercase tracking-wider text-kramp-red/80 bg-white/70 px-1 py-px rounded">
             auto

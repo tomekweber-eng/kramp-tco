@@ -39,7 +39,10 @@ export default function CustomerForm({
     onChange({ ...customer, [k]: v });
 
   return (
-    <div className="h-full flex flex-col px-5 py-5 overflow-y-auto">
+    <div
+      className="h-full flex flex-col px-5 py-5 overflow-y-auto"
+      style={{ touchAction: "pan-y" }}
+    >
       {/* Locked badge */}
       <div className="flex items-center gap-2 mb-3">
         <span className="inline-flex h-6 px-2 items-center rounded-full bg-kramp-red text-[11px] font-bold uppercase tracking-wider text-white gap-1">
@@ -53,8 +56,6 @@ export default function CustomerForm({
 
       <h1 className="font-display text-[24px] font-bold uppercase tracking-tight text-kramp-blue leading-[1.08] mb-1.5">
         Twój raport oszczędności
-        <br />
-        <span className="text-kramp-red">jest prawie gotowy.</span>
       </h1>
       <p className="text-[13px] leading-snug text-kramp-blue/65 mb-3">
         Uzupełnij dane, a otrzymasz pełny raport oszczędności wraz z
@@ -63,9 +64,6 @@ export default function CustomerForm({
 
       {/* Already-computed preview — show the value before asking for data */}
       <div className="rounded-2xl bg-kramp-blue text-white px-3.5 py-3 mb-4 shadow-sm">
-        <div className="text-[10px] font-bold uppercase tracking-wider opacity-75 mb-1.5">
-          Już wyliczyliśmy
-        </div>
         <div className="grid grid-cols-2 gap-2">
           <div className="min-w-0">
             <div className="text-[9px] uppercase tracking-wider font-bold opacity-70 leading-tight mb-0.5">
@@ -261,7 +259,7 @@ function Check({
   children: React.ReactNode;
 }) {
   return (
-    <label className="flex items-start gap-2.5 cursor-pointer">
+    <label className="relative flex items-start gap-2.5 cursor-pointer">
       <span
         className={[
           "flex-none mt-0.5 w-5 h-5 rounded-md border grid place-items-center transition-colors",

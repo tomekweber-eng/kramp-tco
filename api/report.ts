@@ -5,10 +5,12 @@ import {
   Page,
   Text,
   View,
+  Image,
   StyleSheet,
   Font,
   renderToBuffer,
 } from "@react-pdf/renderer";
+import { KRAMP_LOGO_DATA_URI } from "./logo.js";
 
 // The built-in PDF fonts (Helvetica) cannot render Polish diacritics, so we
 // register DejaVu Sans (full Latin-2 coverage) from a versioned CDN.
@@ -24,19 +26,68 @@ Font.register({
     },
   ],
 });
+// Avoid mid-word hyphenation of Polish text.
+Font.registerHyphenationCallback((word) => [word]);
 
-// Loose shape — the payload arrives as JSON, we only read what we render.
+// Self-contained shape — the payload arrives as JSON (full `inputs` + full
+// `results` from compute()). We mirror the fields we render so this module has
+// no cross-package import beyond the inlined logo.
 export type ReportData = {
   customer: { name: string; email: string; postalCode: string };
+  inputs: {
+    b_suppliers: number;
+    a_suppliers: number;
+    b_meetings: number;
+    a_meetings: number;
+    b_duration: number;
+    a_duration: number;
+    turnover_per_hour: number;
+    orders_per_year: number;
+    b_time_find: number;
+    b_time_treat: number;
+    b_stock_value: number;
+    b_pct_depr: number;
+    b_depr_level: number;
+    stock_reduction: number;
+    a_pct_depr: number;
+    b_cost_per_parcel: number;
+    b_pct_kramp: number;
+    a_pct_kramp: number;
+    kramp_freight: number;
+    a_avg_carriage_other: number;
+  };
   results: {
     net_benefit: number;
     total_revenue: number;
     total_savings: number;
     total_hours_saved: number;
-    m1: { revenue: number; hours_saved: number };
-    m2: { revenue: number; hours_saved: number };
-    m3: { savings: number };
-    m4: { savings: number };
+    m1: { before_h: number; after_h: number; hours_saved: number; revenue: number };
+    m2: {
+      before_orders: number;
+      after_orders: number;
+      a_time_find: number;
+      a_time_treat: number;
+      before_h: number;
+      after_h: number;
+      hours_saved: number;
+      revenue: number;
+    };
+    m3: {
+      a_stock_value: number;
+      before_depr: number;
+      after_depr: number;
+      savings: number;
+    };
+    m4: {
+      cost_before: number;
+      kramp_before: number;
+      kramp_after: number;
+      other_before: number;
+      other_after: number;
+      avg_carriage_before: number;
+      cost_after: number;
+      savings: number;
+    };
   };
   date: string;
 };
@@ -47,46 +98,86 @@ const BLUE = "#121f32";
 const TURQUOISE = "#65b994";
 const TURQUOISE_TINT = "#eaf3ef";
 const GREY = "#6b7280";
+const FAINT = "#9ca3af";
 const LINE = "#e5e7eb";
+const TRACK = "#eef1f4";
 
-const fmtMoney = (n: number) =>
-  `${new Intl.NumberFormat("pl-PL", { maximumFractionDigits: 0 }).format(
-    Math.round(n),
-  )} zł`;
-const fmtHours = (n: number) =>
-  `${new Intl.NumberFormat("pl-PL", { maximumFractionDigits: 1 }).format(n)} h`;
+// Kramp Sp. z o.o. — public contact data (kramp.com / identyfikacja).
+// TODO: verify before live use; keep in sync with the advisor CTA URL.
+const CONTACT = {
+  company: "Kramp Sp. z o.o.",
+  address: "ul. Skandynawska 1, Modła Królewska, 62-571 Stare Miasto",
+  phone: "+48 63 240 67 00",
+  email: "info.pl@kramp.com",
+  web: "kramp.com",
+};
+const CLAIM = "To takie proste.";
+
+const nf0 = new Intl.NumberFormat("pl-PL", { maximumFractionDigits: 0 });
+const fmtMoney = (n: number) => `${nf0.format(Math.round(n))} zł`;
+const fmtHours = (n: number) => `${nf0.format(Math.round(n))} h`;
+const fmtNum = (n: number) => nf0.format(Math.round(n));
 
 const s = StyleSheet.create({
   page: {
-    padding: 38,
-    fontSize: 11,
+    paddingTop: 66,
+    paddingBottom: 52,
+    paddingHorizontal: 38,
+    fontSize: 10.5,
     color: BLUE,
     fontFamily: "DejaVu",
     lineHeight: 1.4,
   },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+
+  // Fixed header / footer (repeat on every page)
+  headerBar: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
     backgroundColor: RED,
     color: "#fff",
-    padding: 16,
-    borderRadius: 6,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 11,
+    paddingHorizontal: 38,
   },
-  brand: { fontSize: 16, fontWeight: "bold" },
-  headerDate: { fontSize: 9, color: "#fff" },
+  logo: { width: 22, height: 22, borderRadius: 4, marginRight: 9 },
+  headerBrand: { fontSize: 13, fontWeight: "bold", letterSpacing: 0.5 },
+  headerClaim: { fontSize: 8.5, opacity: 0.9, marginTop: 1 },
+  headerRight: { marginLeft: "auto", fontSize: 8.5, opacity: 0.9, textAlign: "right" },
 
-  meta: { marginTop: 18 },
-  metaLabel: { fontSize: 8, color: GREY, textTransform: "uppercase" },
-  metaValue: { fontSize: 13, fontWeight: "bold", marginTop: 1 },
+  footerBar: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 38,
+    paddingTop: 7,
+    paddingBottom: 14,
+    borderTop: `1pt solid ${LINE}`,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  footerText: { fontSize: 7.5, color: GREY, lineHeight: 1.35 },
+  footerPage: { fontSize: 7.5, color: FAINT },
+
+  // Page 1
+  meta: { marginTop: 2 },
+  metaLabel: { fontSize: 8, color: GREY, textTransform: "uppercase", letterSpacing: 0.4 },
+  metaValue: { fontSize: 14, fontWeight: "bold", marginTop: 1 },
   metaSub: { fontSize: 9, color: GREY },
+
+  pageTitle: { fontSize: 17, fontWeight: "bold", marginTop: 12, color: BLUE },
+  intro: { fontSize: 10.5, marginTop: 6, lineHeight: 1.5, color: "#374151" },
 
   cards: { flexDirection: "row", marginTop: 14 },
   heroCard: {
     flex: 1,
     backgroundColor: RED,
     color: "#fff",
-    padding: 16,
+    padding: 15,
     borderRadius: 6,
     marginRight: 5,
   },
@@ -94,172 +185,450 @@ const s = StyleSheet.create({
     flex: 1,
     backgroundColor: BLUE,
     color: "#fff",
-    padding: 16,
+    padding: 15,
     borderRadius: 6,
     marginLeft: 5,
   },
-  cardLabel: { fontSize: 9, textTransform: "uppercase", opacity: 0.85 },
-  cardValue: { fontSize: 24, fontWeight: "bold", marginTop: 6 },
-  caption: { fontSize: 8, color: GREY, marginTop: 8 },
-
-  lever: {
-    marginTop: 12,
-    backgroundColor: TURQUOISE_TINT,
-    borderLeft: `3pt solid ${TURQUOISE}`,
-    padding: 12,
-    borderRadius: 4,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  leverLabel: { fontSize: 8, color: GREY, textTransform: "uppercase" },
-  leverName: { fontSize: 13, fontWeight: "bold" },
-  leverValue: { fontSize: 13, fontWeight: "bold" },
+  cardLabel: { fontSize: 8.5, textTransform: "uppercase", opacity: 0.85, letterSpacing: 0.4 },
+  cardValue: { fontSize: 23, fontWeight: "bold", marginTop: 6 },
+  cardSub: { fontSize: 8, opacity: 0.8, marginTop: 4 },
 
   sectionTitle: {
     fontSize: 9,
     textTransform: "uppercase",
     color: GREY,
-    marginTop: 22,
+    marginTop: 12,
     marginBottom: 6,
     fontWeight: "bold",
+    letterSpacing: 0.5,
   },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    borderBottom: `1pt solid ${LINE}`,
-    paddingVertical: 7,
-  },
-  rowLabel: { fontWeight: "bold" },
-  rowSub: { fontSize: 8, color: GREY },
-  rowValue: { fontWeight: "bold" },
-
-  totalRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 9,
-    marginTop: 2,
-  },
-  totalLabel: { fontWeight: "bold", fontSize: 12 },
-  totalValue: { fontWeight: "bold", fontSize: 14, color: RED },
-
-  footTitle: {
+  // Section title that opens a fresh page (no big top margin under the header).
+  sectionTitleTop: {
     fontSize: 9,
     textTransform: "uppercase",
     color: GREY,
-    marginTop: 22,
-    marginBottom: 4,
+    marginTop: 2,
+    marginBottom: 8,
     fontWeight: "bold",
+    letterSpacing: 0.5,
   },
-  footItem: { fontSize: 10, marginBottom: 2 },
-  disclaimer: { marginTop: 16, fontSize: 8, color: "#9ca3af", lineHeight: 1.5 },
+
+  // Composition bars (page 1)
+  compRow: { marginBottom: 9 },
+  compHead: { flexDirection: "row", justifyContent: "space-between", marginBottom: 3 },
+  compName: { fontSize: 9.5, fontWeight: "bold" },
+  compVal: { fontSize: 9.5, fontWeight: "bold" },
+  track: { height: 7, backgroundColor: TRACK, borderRadius: 4 },
+  fill: { height: 7, borderRadius: 4 },
+
+  note: {
+    marginTop: 16,
+    backgroundColor: TURQUOISE_TINT,
+    borderLeft: `3pt solid ${TURQUOISE}`,
+    borderRadius: 4,
+    padding: 11,
+  },
+  noteTitle: { fontSize: 8.5, fontWeight: "bold", textTransform: "uppercase", color: BLUE, letterSpacing: 0.4 },
+  noteText: { fontSize: 9, color: "#374151", marginTop: 3, lineHeight: 1.45 },
+
+  // Page 2 modules
+  module: { marginBottom: 10 },
+  modHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 3 },
+  modName: { fontSize: 12, fontWeight: "bold", color: BLUE, flex: 1, paddingRight: 8 },
+  modPill: {
+    fontSize: 10.5,
+    fontWeight: "bold",
+    color: "#fff",
+    backgroundColor: RED,
+    paddingVertical: 2.5,
+    paddingHorizontal: 8,
+    borderRadius: 10,
+  },
+  modWhat: { fontSize: 9, color: "#374151", lineHeight: 1.4, marginBottom: 5 },
+  modWhy: {
+    fontSize: 8.8,
+    color: BLUE,
+    lineHeight: 1.4,
+    marginTop: 5,
+    paddingLeft: 8,
+    borderLeft: `2pt solid ${TURQUOISE}`,
+  },
+
+  barRow: { marginBottom: 3.5 },
+  barTop: { flexDirection: "row", justifyContent: "space-between", marginBottom: 2 },
+  barLabel: { fontSize: 8.5, color: GREY },
+  barValue: { fontSize: 8.5, fontWeight: "bold", color: BLUE },
+  barCaption: { fontSize: 7.5, color: FAINT, marginTop: 2 },
+
+  // Page 3 — inputs / methodology
+  grpTitle: { fontSize: 9.5, fontWeight: "bold", color: RED, marginTop: 8, marginBottom: 2 },
+  irow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    borderBottom: `0.7pt solid ${LINE}`,
+    paddingVertical: 3,
+  },
+  ilabel: { fontSize: 9, color: "#374151", flex: 1, paddingRight: 10 },
+  ivalue: { fontSize: 9, fontWeight: "bold", color: BLUE },
+
+  bullet: { flexDirection: "row", marginBottom: 3 },
+  bulletDot: { fontSize: 9.5, color: RED, marginRight: 6 },
+  bulletText: { fontSize: 9.5, color: "#374151", lineHeight: 1.4, flex: 1 },
+
+  cta: {
+    marginTop: 12,
+    backgroundColor: BLUE,
+    borderRadius: 6,
+    padding: 11,
+  },
+  ctaTitle: { fontSize: 11.5, fontWeight: "bold", color: "#fff" },
+  ctaText: { fontSize: 9, color: "#fff", opacity: 0.85, marginTop: 3, lineHeight: 1.4 },
+
+  disclaimer: { marginTop: 10, fontSize: 7.5, color: FAINT, lineHeight: 1.45 },
 });
 
 const el = React.createElement;
 
-function moduleRow(
+// One before/after bar on a shared scale.
+function bar(
   key: string,
   label: string,
-  sub: string,
-  value: number,
+  value: string,
+  ratio: number,
+  color: string,
+  caption: string,
 ): React.ReactElement {
-  return el(View, { key, style: s.row }, [
-    el(View, { key: "l" }, [
-      el(Text, { key: "t", style: s.rowLabel }, label),
-      el(Text, { key: "su", style: s.rowSub }, sub),
+  const pct = `${Math.max(3, Math.min(100, Math.round(ratio * 100)))}%`;
+  return el(View, { key, style: s.barRow }, [
+    el(View, { key: "t", style: s.barTop }, [
+      el(Text, { key: "l", style: s.barLabel }, label),
+      el(Text, { key: "v", style: s.barValue }, value),
     ]),
-    el(Text, { key: "v", style: s.rowValue }, fmtMoney(Math.abs(value))),
+    el(View, { key: "tr", style: s.track }, [
+      el(View, { key: "f", style: [s.fill, { width: pct, backgroundColor: color }] }),
+    ]),
+    el(Text, { key: "c", style: s.barCaption }, caption),
+  ]);
+}
+
+function inputRow(key: string, label: string, value: string): React.ReactElement {
+  return el(View, { key, style: s.irow }, [
+    el(Text, { key: "l", style: s.ilabel }, label),
+    el(Text, { key: "v", style: s.ivalue }, value),
+  ]);
+}
+
+function bulletItem(key: string, text: string): React.ReactElement {
+  return el(View, { key, style: s.bullet }, [
+    el(Text, { key: "d", style: s.bulletDot }, "•"),
+    el(Text, { key: "t", style: s.bulletText }, text),
   ]);
 }
 
 export function buildReport(data: ReportData): React.ReactElement {
-  const { customer, results, date } = data;
+  const { customer, inputs: i, results: r, date } = data;
 
+  // ---- Header & footer (fixed, repeat on every page) -----------------------
+  const header = el(View, { key: "hdr", fixed: true, style: s.headerBar }, [
+    el(Image, { key: "logo", src: KRAMP_LOGO_DATA_URI, style: s.logo }),
+    el(View, { key: "txt" }, [
+      el(Text, { key: "b", style: s.headerBrand }, "KRAMP"),
+      el(Text, { key: "c", style: s.headerClaim }, CLAIM),
+    ]),
+    el(Text, { key: "r", style: s.headerRight }, "Raport potencjału\nkonsolidacji"),
+  ]);
+
+  const footer = el(View, { key: "ftr", fixed: true, style: s.footerBar }, [
+    el(View, { key: "c" }, [
+      el(Text, { key: "1", style: s.footerText }, `${CONTACT.company} · ${CONTACT.address}`),
+      el(
+        Text,
+        { key: "2", style: s.footerText },
+        `tel. ${CONTACT.phone} · ${CONTACT.email} · ${CONTACT.web}`,
+      ),
+    ]),
+    el(Text, {
+      key: "p",
+      style: s.footerPage,
+      render: ({ pageNumber, totalPages }: { pageNumber: number; totalPages: number }) =>
+        `${pageNumber} / ${totalPages}`,
+    }),
+  ]);
+
+  // ---- Page 1: summary -----------------------------------------------------
   const levers = [
-    { name: "Spotkania z dostawcami", value: results.m1.revenue },
-    { name: "Proces zamawiania", value: results.m2.revenue },
-    { name: "Amortyzacja zapasów", value: results.m3.savings },
-    { name: "Transport", value: results.m4.savings },
+    { name: "Spotkania z dostawcami", value: r.m1.revenue },
+    { name: "Proces zamawiania", value: r.m2.revenue },
+    { name: "Amortyzacja zapasów", value: r.m3.savings },
+    { name: "Transport", value: r.m4.savings },
   ];
-  const top = levers.reduce((a, b) => (b.value > a.value ? b : a));
+  const leverMax = Math.max(1, ...levers.map((l) => Math.abs(l.value)));
+  const days = Math.round(r.total_hours_saved / 8);
+
+  const page1 = [
+    el(View, { key: "meta", style: s.meta }, [
+      el(Text, { key: "l", style: s.metaLabel }, "Przygotowane dla"),
+      el(Text, { key: "n", style: s.metaValue }, customer.name || "—"),
+      el(
+        Text,
+        { key: "e", style: s.metaSub },
+        `${customer.email}${customer.postalCode ? " · " + customer.postalCode : ""} · ${date}`,
+      ),
+    ]),
+
+    el(Text, { key: "title", style: s.pageTitle }, "Ile możesz zyskać, upraszczając zaopatrzenie"),
+    el(
+      Text,
+      { key: "intro", style: s.intro },
+      "Ten raport pokazuje, ile Twoja firma może zyskać, przenosząc część zaopatrzenia do " +
+        "jednego, szerokiego dostawcy. Nie liczymy życzeń — liczymy na Twoich danych, według " +
+        "jawnych założeń opisanych na ostatniej stronie. Każdą kwotę możesz prześledzić krok po kroku.",
+    ),
+
+    el(View, { key: "cards", style: s.cards }, [
+      el(View, { key: "m", style: s.heroCard }, [
+        el(Text, { key: "l", style: s.cardLabel }, "Roczna korzyść netto"),
+        el(Text, { key: "v", style: s.cardValue }, fmtMoney(r.net_benefit)),
+        el(Text, { key: "s", style: s.cardSub }, "Dodatkowy przychód + oszczędności kosztów"),
+      ]),
+      el(View, { key: "t", style: s.timeCard }, [
+        el(Text, { key: "l", style: s.cardLabel }, "Odzyskany czas / rok"),
+        el(Text, { key: "v", style: s.cardValue }, fmtHours(r.total_hours_saved)),
+        el(Text, { key: "s", style: s.cardSub }, `≈ ${days} dni roboczych z powrotem dla zespołu`),
+      ]),
+    ]),
+
+    el(Text, { key: "ct", style: s.sectionTitle }, "Z czego składa się korzyść"),
+    ...levers.map((l, idx) =>
+      el(View, { key: `comp${idx}`, style: s.compRow }, [
+        el(View, { key: "h", style: s.compHead }, [
+          el(Text, { key: "n", style: s.compName }, l.name),
+          el(Text, { key: "v", style: s.compVal }, fmtMoney(Math.abs(l.value))),
+        ]),
+        el(View, { key: "tr", style: s.track }, [
+          el(View, {
+            key: "f",
+            style: [
+              s.fill,
+              {
+                width: `${Math.max(3, Math.round((Math.abs(l.value) / leverMax) * 100))}%`,
+                backgroundColor: idx < 2 ? RED : TURQUOISE,
+              },
+            ],
+          }),
+        ]),
+      ]),
+    ),
+
+    el(View, { key: "note", style: s.note }, [
+      el(Text, { key: "t", style: s.noteTitle }, "Jak czytać ten raport"),
+      el(
+        Text,
+        { key: "x", style: s.noteText },
+        "Przychód to czas zespołu odzyskany dzięki prostszej obsłudze, przeliczony na pieniądze " +
+          "przez Twój obrót na godzinę. Oszczędności to niższe koszty zapasu i transportu. " +
+          "Każda dźwignia jest rozpisana na stronie 2, a wszystkie założenia — na stronie 3.",
+      ),
+    ]),
+  ];
+
+  // ---- Page 2: the four levers --------------------------------------------
+  const m1Max = Math.max(1, r.m1.before_h, r.m1.after_h);
+  const m2Max = Math.max(1, r.m2.before_h, r.m2.after_h);
+  const m3Max = Math.max(1, r.m3.before_depr, r.m3.after_depr);
+  const m4Max = Math.max(1, r.m4.cost_before, r.m4.cost_after);
+
+  const moduleBlock = (
+    key: string,
+    n: number,
+    name: string,
+    value: number,
+    what: string,
+    bars: React.ReactElement[],
+    why: string,
+  ): React.ReactElement =>
+    el(View, { key, style: s.module, wrap: false }, [
+      el(View, { key: "h", style: s.modHead }, [
+        el(Text, { key: "n", style: s.modName }, `${n}. ${name}`),
+        el(Text, { key: "p", style: s.modPill }, `+ ${fmtMoney(Math.abs(value))}`),
+      ]),
+      el(Text, { key: "w", style: s.modWhat }, what),
+      ...bars,
+      el(Text, { key: "y", style: s.modWhy }, why),
+    ]);
+
+  const page2 = el(View, { key: "p2", break: true }, [
+    el(Text, { key: "st", style: s.sectionTitleTop }, "Cztery dźwignie — skąd bierze się wynik"),
+
+    moduleBlock(
+      "m1",
+      1,
+      "Spotkania z dostawcami",
+      r.m1.revenue,
+      "Co liczymy: czas, który Twój zespół spędza rocznie na spotkaniach z dostawcami — i ile z niego wraca przy mniejszej ich liczbie.",
+      [
+        bar(
+          "b",
+          "Dziś",
+          fmtHours(r.m1.before_h),
+          r.m1.before_h / m1Max,
+          BLUE,
+          `${fmtNum(i.b_suppliers)} dostawców × ${fmtNum(i.b_meetings)} spotkań × ${fmtNum(i.b_duration)} h`,
+        ),
+        bar(
+          "a",
+          "Z Kramp",
+          fmtHours(r.m1.after_h),
+          r.m1.after_h / m1Max,
+          TURQUOISE,
+          `${fmtNum(i.a_suppliers)} dostawców — ${fmtHours(r.m1.hours_saved)} odzyskane × ${fmtMoney(i.turnover_per_hour)}/h`,
+        ),
+      ],
+      "Dlaczego to dla Ciebie ważne: mniej dostawców to mniej kalendarza zjedzonego na koordynację. Ten czas wraca do sprzedaży i obsługi klienta — tam, gdzie realnie zarabiasz.",
+    ),
+
+    moduleBlock(
+      "m2",
+      2,
+      "Proces zamawiania",
+      r.m2.revenue,
+      "Co liczymy: łączny czas wyszukiwania produktów i przyjęcia dostaw na wszystkich zamówieniach w roku.",
+      [
+        bar(
+          "b",
+          "Dziś",
+          fmtHours(r.m2.before_h),
+          r.m2.before_h / m2Max,
+          BLUE,
+          `${fmtNum(r.m2.before_orders)} zamówień × (${fmtNum(i.b_time_find)} + ${fmtNum(i.b_time_treat)}) min`,
+        ),
+        bar(
+          "a",
+          "Z Kramp",
+          fmtHours(r.m2.after_h),
+          r.m2.after_h / m2Max,
+          TURQUOISE,
+          `${fmtNum(r.m2.after_orders)} zamówień — ${fmtHours(r.m2.hours_saved)} odzyskane × ${fmtMoney(i.turnover_per_hour)}/h`,
+        ),
+      ],
+      "Dlaczego to dla Ciebie ważne: jedno źródło to jeden koszyk, jedna dostawa, jedna faktura. Mniej klikania, mniej przyjęć na rampie i mniej pomyłek.",
+    ),
+
+    moduleBlock(
+      "m3",
+      3,
+      "Amortyzacja zapasów",
+      r.m3.savings,
+      "Co liczymy: koszt starzenia się magazynu — wartość, którą co roku odpisujesz na zalegający towar.",
+      [
+        bar(
+          "b",
+          "Dziś",
+          fmtMoney(r.m3.before_depr),
+          r.m3.before_depr / m3Max,
+          BLUE,
+          `zapas ${fmtMoney(i.b_stock_value)} · ${fmtNum(i.b_pct_depr)}% podlega odpisom`,
+        ),
+        bar(
+          "a",
+          "Z Kramp",
+          fmtMoney(r.m3.after_depr),
+          r.m3.after_depr / m3Max,
+          TURQUOISE,
+          `zapas ${fmtMoney(r.m3.a_stock_value)} (−${fmtNum(i.stock_reduction)}% dzięki dostępności od ręki)`,
+        ),
+      ],
+      "Dlaczego to dla Ciebie ważne: nie musisz trzymać wszystkiego „na wszelki wypadek”. Mniej martwego towaru to więcej gotówki w obrocie.",
+    ),
+
+    moduleBlock(
+      "m4",
+      4,
+      "Transport",
+      r.m4.savings,
+      "Co liczymy: roczny koszt dostaw i to, jak spada, gdy więcej paczek idzie przez jednego dostawcę z lepszą stawką.",
+      [
+        bar(
+          "b",
+          "Dziś",
+          fmtMoney(r.m4.cost_before),
+          r.m4.cost_before / m4Max,
+          BLUE,
+          `${fmtNum(r.m2.before_orders)} przesyłek · średnio ${fmtMoney(i.b_cost_per_parcel)}/paczkę`,
+        ),
+        bar(
+          "a",
+          "Z Kramp",
+          fmtMoney(r.m4.cost_after),
+          r.m4.cost_after / m4Max,
+          TURQUOISE,
+          `udział Kramp ${fmtNum(i.b_pct_kramp)}% → ${fmtNum(i.a_pct_kramp)}% · mniej drobnych przesyłek`,
+        ),
+      ],
+      "Dlaczego to dla Ciebie ważne: mniej drobnych przesyłek od wielu dostawców, więcej skonsolidowanych dostaw. Niższy koszt jednostkowy i krótsze oczekiwanie na towar.",
+    ),
+  ]);
+
+  // ---- Page 3: inputs, method, next step ----------------------------------
+  const page3 = el(View, { key: "p3", break: true }, [
+    el(Text, { key: "st", style: s.sectionTitleTop }, "Twoje dane i założenia"),
+
+    el(Text, { key: "g1", style: s.grpTitle }, "Spotkania z dostawcami"),
+    inputRow("g1a", "Liczba dostawców (dziś → docelowo)", `${fmtNum(i.b_suppliers)} → ${fmtNum(i.a_suppliers)}`),
+    inputRow("g1b", "Spotkania na rok / czas spotkania", `${fmtNum(i.b_meetings)} × ${fmtNum(i.b_duration)} h`),
+    inputRow("g1c", "Obrót na godzinę pracy", `${fmtMoney(i.turnover_per_hour)}`),
+
+    el(Text, { key: "g2", style: s.grpTitle }, "Proces zamawiania"),
+    inputRow("g2a", "Zamówienia na rok", fmtNum(i.orders_per_year)),
+    inputRow("g2b", "Czas wyszukania / przyjęcia 1 zamówienia", `${fmtNum(i.b_time_find)} + ${fmtNum(i.b_time_treat)} min`),
+
+    el(Text, { key: "g3", style: s.grpTitle }, "Amortyzacja zapasów"),
+    inputRow("g3a", "Wartość zapasu", fmtMoney(i.b_stock_value)),
+    inputRow("g3b", "Udział podlegający odpisom / poziom odpisu", `${fmtNum(i.b_pct_depr)}% · ${fmtNum(i.b_depr_level)}%`),
+    inputRow("g3c", "Redukcja zapasu po konsolidacji", `−${fmtNum(i.stock_reduction)}%`),
+
+    el(Text, { key: "g4", style: s.grpTitle }, "Transport"),
+    inputRow("g4a", "Średni koszt przesyłki dziś", fmtMoney(i.b_cost_per_parcel)),
+    inputRow("g4b", "Udział paczek przez Kramp (dziś → docelowo)", `${fmtNum(i.b_pct_kramp)}% → ${fmtNum(i.a_pct_kramp)}%`),
+    inputRow("g4c", "Stawka frachtu Kramp / pozostali", `${fmtMoney(i.kramp_freight)} · ${fmtMoney(i.a_avg_carriage_other)}`),
+
+    el(Text, { key: "st2", style: s.sectionTitle }, "Jak to liczymy"),
+    bulletItem("mb1", "Przychód z czasu = odzyskane godziny × Twój obrót na godzinę pracy."),
+    bulletItem(
+      "mb2",
+      "Liczba zamówień i koszty transportu skalują się udziałem jednego dostawcy — dlatego zmiana liczby dostawców porusza cały wynik.",
+    ),
+    bulletItem("mb3", "Oszczędność = koszt dziś − koszt po konsolidacji."),
+    bulletItem("mb4", "Korzyść netto = dodatkowy przychód + oszczędności kosztów."),
+
+    el(Text, { key: "st3", style: s.sectionTitle }, "Co wpływa na wynik"),
+    bulletItem("wb1", "Im większa różnica między liczbą dostawców dziś a docelowo, tym większy efekt."),
+    bulletItem("wb2", "Wartości są orientacyjne i bazują na Twoich danych oraz średnich rynkowych."),
+    bulletItem("wb3", "Ostateczny zakres ustalasz wspólnie z doradcą Kramp."),
+
+    el(View, { key: "cta", style: s.cta }, [
+      el(Text, { key: "t", style: s.ctaTitle }, "Porozmawiajmy o Twoim wyniku"),
+      el(
+        Text,
+        { key: "x", style: s.ctaText },
+        `Doradca Kramp pomoże dopasować zakres konsolidacji do Twojej firmy. Zadzwoń: ${CONTACT.phone} ` +
+          `lub napisz: ${CONTACT.email}.`,
+      ),
+    ]),
+
+    el(
+      Text,
+      { key: "disc", style: s.disclaimer },
+      "Wartości mają charakter orientacyjny i bazują na podanych danych oraz średnich rynkowych. " +
+        "Niniejszy raport nie stanowi oferty w rozumieniu przepisów prawa. Ostateczna korzyść zależy " +
+        "od zakresu konsolidacji ustalonego z Kramp.",
+    ),
+  ]);
 
   return el(
     Document,
     {},
-    el(Page, { size: "A4", style: s.page }, [
-      el(View, { key: "head", style: s.header }, [
-        el(Text, { key: "h", style: s.brand }, "KRAMP · Raport oszczędności"),
-        el(Text, { key: "d", style: s.headerDate }, date),
-      ]),
-
-      el(View, { key: "meta", style: s.meta }, [
-        el(Text, { key: "l", style: s.metaLabel }, "Przygotowane dla"),
-        el(Text, { key: "n", style: s.metaValue }, customer.name || "—"),
-        el(
-          Text,
-          { key: "e", style: s.metaSub },
-          `${customer.email}${customer.postalCode ? " · " + customer.postalCode : ""}`,
-        ),
-      ]),
-
-      el(View, { key: "cards", style: s.cards }, [
-        el(View, { key: "money", style: s.heroCard }, [
-          el(Text, { key: "l", style: s.cardLabel }, "Roczna korzyść netto"),
-          el(Text, { key: "v", style: s.cardValue }, fmtMoney(results.net_benefit)),
-        ]),
-        el(View, { key: "time", style: s.timeCard }, [
-          el(Text, { key: "l", style: s.cardLabel }, "Odzyskany czas / rok"),
-          el(Text, { key: "v", style: s.cardValue }, fmtHours(results.total_hours_saved)),
-        ]),
-      ]),
-      el(
-        Text,
-        { key: "caption", style: s.caption },
-        `Przychód ${fmtMoney(results.total_revenue)} · Oszczędności ${fmtMoney(
-          results.total_savings,
-        )} · czas zespołu do wykorzystania na sprzedaż`,
-      ),
-
-      el(View, { key: "lever", style: s.lever }, [
-        el(View, { key: "l" }, [
-          el(Text, { key: "lab", style: s.leverLabel }, "Największy potencjał"),
-          el(Text, { key: "n", style: s.leverName }, top.name),
-        ]),
-        el(Text, { key: "v", style: s.leverValue }, fmtMoney(Math.abs(top.value))),
-      ]),
-
-      el(Text, { key: "st", style: s.sectionTitle }, "Wpływ wg modułu"),
-      moduleRow(
-        "m1",
-        "1. Spotkania z dostawcami",
-        `${fmtHours(results.m1.hours_saved)} odzyskane`,
-        results.m1.revenue,
-      ),
-      moduleRow(
-        "m2",
-        "2. Proces zamawiania",
-        `${fmtHours(results.m2.hours_saved)} odzyskane`,
-        results.m2.revenue,
-      ),
-      moduleRow("m3", "3. Amortyzacja zapasów", "Niższy odpis zapasów", results.m3.savings),
-      moduleRow("m4", "4. Transport", "Skonsolidowany transport", results.m4.savings),
-      el(View, { key: "total", style: s.totalRow }, [
-        el(Text, { key: "l", style: s.totalLabel }, "Razem / rok"),
-        el(Text, { key: "v", style: s.totalValue }, fmtMoney(results.net_benefit)),
-      ]),
-
-      el(Text, { key: "ft", style: s.footTitle }, "Co wpływa na wynik"),
-      el(Text, { key: "f1", style: s.footItem }, "• Ograniczenie liczby dostawców"),
-      el(Text, { key: "f2", style: s.footItem }, "• Automatyzacja zamówień"),
-      el(Text, { key: "f3", style: s.footItem }, "• Redukcja stanów magazynowych"),
-      el(Text, { key: "f4", style: s.footItem }, "• Optymalizacja dostaw"),
-
-      el(
-        Text,
-        { key: "disc", style: s.disclaimer },
-        "Wartości mają charakter orientacyjny i bazują na podanych danych oraz średnich rynkowych. Ostateczna korzyść zależy od zakresu konsolidacji ustalonego z Kramp.",
-      ),
-    ]),
+    el(Page, { size: "A4", style: s.page }, [header, footer, ...page1, page2, page3]),
   );
 }
 

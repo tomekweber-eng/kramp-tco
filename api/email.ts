@@ -14,11 +14,23 @@ const fmtMoney = (n: number) =>
 const fmtHours = (n: number) =>
   `${new Intl.NumberFormat("pl-PL", { maximumFractionDigits: 1 }).format(n)} h`;
 
+// Kramp Sp. z o.o. — public contact data (kramp.com / identyfikacja).
+// TODO: verify before live use; keep in sync with CONTACT in api/report.ts.
+const CONTACT = {
+  company: "Kramp Sp. z o.o.",
+  address: "ul. Skandynawska 1, Modła Królewska, 62-571 Stare Miasto",
+  phone: "+48 63 240 67 00",
+  email: "info.pl@kramp.com",
+  web: "kramp.com",
+};
+
 function html(data: ReportData): string {
   const { customer, results } = data;
-  // Brand CVI v1.0 colours (match src/index.css).
+  // Brand CVI v1.0 colours (match src/index.css and api/report.ts).
   const RED = "#af000f";
   const BLUE = "#121f32";
+  const TURQUOISE = "#65b994";
+  const days = Math.round(results.total_hours_saved / 8);
 
   const levers = [
     { name: "Spotkania z dostawcami", value: results.m1.revenue },
@@ -26,52 +38,119 @@ function html(data: ReportData): string {
     { name: "Amortyzacja zapasów", value: results.m3.savings },
     { name: "Transport", value: results.m4.savings },
   ];
+  const max = Math.max(1, ...levers.map((l) => Math.abs(l.value)));
   const top = levers.reduce((a, b) => (b.value > a.value ? b : a));
 
+  // Email-safe horizontal bar: a 2-cell table, coloured cell sized by percent.
+  const leverRow = (l: { name: string; value: number }, i: number) => {
+    const pct = Math.max(4, Math.round((Math.abs(l.value) / max) * 100));
+    const color = i < 2 ? RED : TURQUOISE;
+    return `
+      <tr><td style="padding:7px 0 2px">
+        <table role="presentation" width="100%" style="border-collapse:collapse">
+          <tr>
+            <td style="font-size:13px;font-weight:bold;color:${BLUE}">${l.name}</td>
+            <td align="right" style="font-size:13px;font-weight:bold;color:${BLUE}">${fmtMoney(
+              Math.abs(l.value),
+            )}</td>
+          </tr>
+        </table>
+        <table role="presentation" width="100%" style="border-collapse:collapse;margin-top:4px;background:#eef1f4;border-radius:4px">
+          <tr><td style="width:${pct}%;background:${color};height:7px;line-height:7px;border-radius:4px;font-size:0">&nbsp;</td><td style="font-size:0">&nbsp;</td></tr>
+        </table>
+      </td></tr>`;
+  };
+
   return `
-  <div style="font-family:Arial,Helvetica,sans-serif;color:${BLUE};max-width:560px;margin:0 auto">
-    <div style="background:${RED};color:#fff;padding:18px 20px;border-radius:8px">
-      <div style="font-size:18px;font-weight:bold">Kramp · Raport oszczędności</div>
-    </div>
-    <p style="font-size:15px">Dzień dobry${customer.name ? ", " + customer.name : ""},</p>
-    <p style="font-size:14px;line-height:1.5">
-      w załączniku znajdziesz pełny raport oszczędności w PDF. Poniżej skrót wyliczeń:
-    </p>
-    <table role="presentation" width="100%" style="border-collapse:separate;border-spacing:0 8px;margin:8px 0">
-      <tr>
-        <td style="background:${RED};color:#fff;padding:16px 18px;border-radius:8px;width:50%" valign="top">
-          <div style="font-size:11px;text-transform:uppercase;opacity:.85">Roczna korzyść netto</div>
-          <div style="font-size:26px;font-weight:bold">${fmtMoney(results.net_benefit)}</div>
-        </td>
-        <td style="width:10px"></td>
-        <td style="background:${BLUE};color:#fff;padding:16px 18px;border-radius:8px;width:50%" valign="top">
-          <div style="font-size:11px;text-transform:uppercase;opacity:.85">Odzyskany czas / rok</div>
-          <div style="font-size:26px;font-weight:bold">${fmtHours(results.total_hours_saved)}</div>
-        </td>
-      </tr>
-    </table>
-    <div style="background:#eaf3ef;border-left:3px solid #65b994;padding:12px 16px;border-radius:4px;margin:8px 0">
-      <span style="font-size:11px;text-transform:uppercase;color:#6b7280">Największy potencjał:</span>
-      <strong style="font-size:14px"> ${top.name}</strong>
-      <span style="float:right;font-weight:bold">${fmtMoney(Math.abs(top.value))}</span>
-    </div>
-    <p style="font-size:13px;font-weight:bold;text-transform:uppercase;color:#6b7280;margin-bottom:6px">
-      Co wpływa na wynik
-    </p>
-    <ul style="font-size:14px;line-height:1.6;padding-left:18px;margin-top:0">
-      <li>Ograniczenie liczby dostawców</li>
-      <li>Automatyzacja zamówień</li>
-      <li>Redukcja stanów magazynowych</li>
-      <li>Optymalizacja dostaw</li>
-    </ul>
-    <a href="https://www.kramp.com/" style="display:inline-block;background:${RED};color:#fff;text-decoration:none;font-weight:bold;padding:12px 22px;border-radius:8px;margin:12px 0">
-      Porozmawiaj z doradcą Kramp
-    </a>
-    <p style="font-size:11px;color:#9ca3af;line-height:1.5;margin-top:20px">
-      Wartości mają charakter orientacyjny i bazują na podanych danych oraz
-      średnich rynkowych. Ostateczna korzyść zależy od zakresu konsolidacji
-      ustalonego z Kramp.
-    </p>
+  <div style="background:#f3f4f6;padding:20px 0;font-family:Arial,Helvetica,sans-serif">
+  <table role="presentation" width="100%" style="border-collapse:collapse">
+  <tr><td align="center">
+  <table role="presentation" width="600" style="width:600px;max-width:600px;border-collapse:collapse;background:#ffffff;border-radius:10px;overflow:hidden">
+
+    <!-- Header -->
+    <tr><td style="background:${RED};padding:18px 24px">
+      <div style="font-size:20px;font-weight:bold;color:#ffffff;letter-spacing:.5px">KRAMP</div>
+      <div style="font-size:12px;color:#ffffff;opacity:.9">To takie proste.</div>
+    </td></tr>
+
+    <tr><td style="padding:22px 24px 0">
+      <p style="font-size:15px;color:${BLUE};margin:0 0 8px">Dzień dobry${
+        customer.name ? ", " + customer.name : ""
+      },</p>
+      <p style="font-size:14px;line-height:1.55;color:#374151;margin:0">
+        dziękujemy za skorzystanie z kalkulatora. W załączniku znajdziesz pełny, 3-stronicowy
+        raport w PDF — z dokładnym wyliczeniem każdej dźwigni, Twoimi danymi i założeniami.
+        Poniżej najważniejsze liczby.
+      </p>
+    </td></tr>
+
+    <!-- Hero cards -->
+    <tr><td style="padding:16px 24px 0">
+      <table role="presentation" width="100%" style="border-collapse:separate;border-spacing:0">
+        <tr>
+          <td style="background:${RED};border-radius:8px;padding:16px 18px;width:50%" valign="top">
+            <div style="font-size:11px;text-transform:uppercase;color:#fff;opacity:.85">Roczna korzyść netto</div>
+            <div style="font-size:26px;font-weight:bold;color:#fff">${fmtMoney(results.net_benefit)}</div>
+            <div style="font-size:11px;color:#fff;opacity:.8;margin-top:4px">Przychód + oszczędności kosztów</div>
+          </td>
+          <td style="width:12px"></td>
+          <td style="background:${BLUE};border-radius:8px;padding:16px 18px;width:50%" valign="top">
+            <div style="font-size:11px;text-transform:uppercase;color:#fff;opacity:.85">Odzyskany czas / rok</div>
+            <div style="font-size:26px;font-weight:bold;color:#fff">${fmtHours(results.total_hours_saved)}</div>
+            <div style="font-size:11px;color:#fff;opacity:.8;margin-top:4px">≈ ${days} dni roboczych dla zespołu</div>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+
+    <!-- Biggest lever -->
+    <tr><td style="padding:16px 24px 0">
+      <table role="presentation" width="100%" style="border-collapse:collapse;background:#eaf3ef;border-radius:6px">
+        <tr><td style="padding:11px 16px;border-left:3px solid ${TURQUOISE}">
+          <span style="font-size:11px;text-transform:uppercase;color:#6b7280">Największy potencjał:</span>
+          <strong style="font-size:14px;color:${BLUE}"> ${top.name}</strong>
+          <span style="float:right;font-size:14px;font-weight:bold;color:${BLUE}">${fmtMoney(
+            Math.abs(top.value),
+          )}</span>
+        </td></tr>
+      </table>
+    </td></tr>
+
+    <!-- Composition bars -->
+    <tr><td style="padding:18px 24px 0">
+      <div style="font-size:11px;text-transform:uppercase;color:#6b7280;font-weight:bold;margin-bottom:2px">Z czego składa się korzyść</div>
+      <table role="presentation" width="100%" style="border-collapse:collapse">
+        ${levers.map(leverRow).join("")}
+      </table>
+    </td></tr>
+
+    <!-- CTA -->
+    <tr><td style="padding:20px 24px 4px" align="center">
+      <!-- TODO: docelowy URL umawiania rozmowy z doradcą Kramp -->
+      <a href="https://www.kramp.com/" style="display:inline-block;background:${RED};color:#fff;text-decoration:none;font-weight:bold;font-size:14px;padding:13px 26px;border-radius:8px">
+        Porozmawiaj z doradcą Kramp
+      </a>
+    </td></tr>
+
+    <tr><td style="padding:8px 24px 0">
+      <p style="font-size:11px;color:#9ca3af;line-height:1.55;margin:0">
+        Wartości mają charakter orientacyjny i bazują na podanych danych oraz średnich rynkowych.
+        Niniejsza wiadomość nie stanowi oferty. Ostateczna korzyść zależy od zakresu konsolidacji ustalonego z Kramp.
+      </p>
+    </td></tr>
+
+    <!-- Footer -->
+    <tr><td style="padding:16px 24px 20px;border-top:1px solid #e5e7eb;margin-top:12px">
+      <div style="font-size:12px;font-weight:bold;color:${BLUE}">${CONTACT.company}</div>
+      <div style="font-size:11px;color:#6b7280;line-height:1.5">
+        ${CONTACT.address}<br/>
+        tel. ${CONTACT.phone} · ${CONTACT.email} · ${CONTACT.web}
+      </div>
+    </td></tr>
+
+  </table>
+  </td></tr>
+  </table>
   </div>`;
 }
 

@@ -7,21 +7,10 @@ import Field from "./components/Field";
 import ModuleSlide from "./components/ModuleSlide";
 import { Pager, PagerNav, type PagerHandle } from "./components/Pager";
 import HeroSlide from "./components/HeroSlide";
-import Advanced from "./components/Advanced";
 import CustomerForm from "./components/CustomerForm";
 import SummarySlide from "./components/SummarySlide";
 import { isCustomerValid, type Customer } from "./types";
-
-// Next-step labels for the "Dalej: …" progress hint, indexed by slide.
-const STEP_TITLES = [
-  "",
-  "Spotkania z dostawcami",
-  "Proces zamawiania",
-  "Amortyzacja zapasów",
-  "Transport",
-  "Twój raport",
-  "Podsumowanie",
-];
+import krampLogo from "./assets/hero-kramp.png";
 
 // Auto-save: persist progress so a refresh returns to where the user left off.
 const STORAGE_KEY = "kramp-tco-v1";
@@ -57,11 +46,34 @@ export default function App() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [active, setActive] = useState(0);
+  // Furthest step reached — drives the "filling up" result bar so it never
+  // shrinks back when the user scrolls to review an earlier module.
+  const [maxStep, setMaxStep] = useState(saved.active ?? 0);
   const pagerRef = useRef<PagerHandle>(null);
 
   const r = useMemo(() => compute(inputs), [inputs]);
   const customerOK = isCustomerValid(customer);
   const unlocked = submitted && customerOK;
+
+  // The annual-savings bar "fills up" as the user moves through the steps:
+  // each module's contribution is counted once its slide has been reached.
+  // Slides: 1=M1, 2=M2, 3=M3, 4=M4 — so on the form (5) everything is in.
+  const revSoFar =
+    (maxStep >= 1 ? r.m1.revenue : 0) + (maxStep >= 2 ? r.m2.revenue : 0);
+  const savSoFar =
+    (maxStep >= 3 ? r.m3.savings : 0) + (maxStep >= 4 ? r.m4.savings : 0);
+  const hoursSoFar =
+    (maxStep >= 1 ? r.m1.hours_saved : 0) +
+    (maxStep >= 2 ? r.m2.hours_saved : 0);
+  const netSoFar = revSoFar + savSoFar;
+
+  // Bars scale to the FINAL totals so they visibly grow toward a full bar.
+  const barMax = Math.max(
+    1,
+    Math.abs(r.total_revenue),
+    Math.abs(r.total_savings),
+  );
+  const barPct = (v: number) => Math.min(100, (Math.abs(v) / barMax) * 100);
 
   // Persist on every change.
   useEffect(() => {
@@ -103,6 +115,7 @@ export default function App() {
       setConsent({ rodo: false, marketing: false });
       setSubmitted(false);
       setSubmitError(null);
+      setMaxStep(0);
       pagerRef.current?.goTo(0);
     }
   };
@@ -156,100 +169,114 @@ export default function App() {
     <ModuleSlide
       key="m1"
       index={1}
+      isActive={active === 1}
       title="Spotkania z dostawcami"
       subtitle="Czas spotkań z dostawcami w roku"
-      why="Mniej dostawców oznacza mniej czasu na koordynację i administrację."
+      why="Im więcej dostawców, tym mniej czasu na realną pracę. Sprawdź, ile czasu możesz odzyskać, zmieniając liczbę dostawców i spotkań."
+      whyImportant={[
+        "Jeden dostawca to mniej czasu na spotkaniach",
+        "Jeden dostawca to wszystkie produkty dostępne od ręki",
+        "Jeden dostawca to szybsze i pewniejsze dostawy",
+      ]}
       hoursSaved={r.m1.hours_saved}
       impact={r.m1.revenue}
       impactLabel="Dodatkowy przychód / rok"
-    >
-      <BeforeCard>
-        <Field
-          label="Ilu masz dostawców?"
-          value={inputs.b_suppliers}
-          onChange={set("b_suppliers")}
-          min={1}
-        />
-        <Field
-          label="Spotkania / rok"
-          value={inputs.b_meetings}
-          onChange={set("b_meetings")}
-          min={0}
-        />
-      </BeforeCard>
-      <Advanced>
-        <Shared label="Założenia">
+      basic={
+        <BeforeCard>
           <div className="grid grid-cols-2 gap-2">
             <Field
-              label="Czas spotkania"
-              value={inputs.b_duration}
-              onChange={set("b_duration")}
-              unit="h"
-              step={0.5}
-              min={0}
-              hint="Domyślnie 1 h na spotkanie."
+              label="Liczba dostawców"
+              value={inputs.b_suppliers}
+              onChange={set("b_suppliers")}
+              min={1}
             />
-            <Field
-              label="Godzina pracy pracownika"
-              value={inputs.turnover_per_hour}
-              onChange={set("turnover_per_hour")}
-              unit="zł/h"
-              min={0}
-              hint="Całkowity obrót sklepu ÷ roczny czas pracy zespołu."
-            />
-          </div>
-        </Shared>
-        <AfterCard>
-          <Field
-            label="Dostawcy"
-            value={inputs.a_suppliers}
-            onChange={set("a_suppliers")}
-            min={0}
-            tone="after"
-          />
-          <div className="grid grid-cols-2 gap-2">
             <Field
               label="Spotkania / rok"
-              value={inputs.a_meetings}
-              onChange={set("a_meetings")}
+              value={inputs.b_meetings}
+              onChange={set("b_meetings")}
               min={0}
-              tone="after"
-            />
-            <Field
-              label="Czas spotkania"
-              value={inputs.a_duration}
-              onChange={set("a_duration")}
-              unit="h"
-              step={0.5}
-              min={0}
-              tone="after"
             />
           </div>
-        </AfterCard>
-      </Advanced>
-    </ModuleSlide>,
+        </BeforeCard>
+      }
+      advanced={
+        <>
+          <Shared label="Założenia">
+            <div className="grid grid-cols-2 gap-2">
+              <Field
+                label="Czas spotkania"
+                value={inputs.b_duration}
+                onChange={set("b_duration")}
+                unit="h"
+                step={0.5}
+                min={0}
+                hint="Domyślnie 1 h na spotkanie."
+              />
+              <Field
+                label="Godzina pracy pracownika"
+                value={inputs.turnover_per_hour}
+                onChange={set("turnover_per_hour")}
+                unit="zł/h"
+                min={0}
+                hint="Całkowity obrót sklepu ÷ roczny czas pracy zespołu."
+              />
+            </div>
+          </Shared>
+          <AfterCard>
+            <Field
+              label="Dostawcy"
+              value={inputs.a_suppliers}
+              onChange={set("a_suppliers")}
+              min={0}
+              tone="after"
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <Field
+                label="Spotkania / rok"
+                value={inputs.a_meetings}
+                onChange={set("a_meetings")}
+                min={0}
+                tone="after"
+              />
+              <Field
+                label="Czas spotkania"
+                value={inputs.a_duration}
+                onChange={set("a_duration")}
+                unit="h"
+                step={0.5}
+                min={0}
+                tone="after"
+              />
+            </div>
+          </AfterCard>
+        </>
+      }
+    />,
 
     <ModuleSlide
       key="m2"
       index={2}
+      isActive={active === 2}
       title="Proces zamawiania"
       subtitle="Wyszukiwanie produktów i przyjmowanie dostaw"
       why="Automatyzacja pozwala szybciej wyszukiwać produkty i składać zamówienia."
+      whyImportant={[
+        "Jeden dostawca to jeden, prosty proces zamawiania",
+        "Mniej czasu na wyszukiwanie produktów",
+        "Szybsze przyjęcia dostaw to więcej czasu na klienta",
+      ]}
       hoursSaved={r.m2.hours_saved}
       impact={r.m2.revenue}
       impactLabel="Dodatkowy przychód / rok"
-    >
-      <Shared label="Twoje dane">
-        <Field
-          label="Ile produktów kupujesz rocznie?"
-          value={inputs.orders_per_year}
-          onChange={set("orders_per_year")}
-          min={0}
-          hint="≈ 25 zamówień/tydzień × 47 tygodni na stałego dostawcę."
-        />
-      </Shared>
-      <Advanced>
-        <BeforeCard>
+      basic={
+        <Shared>
+          <Field
+            label="Ile produktów kupujesz rocznie?"
+            value={inputs.orders_per_year}
+            onChange={set("orders_per_year")}
+            min={0}
+            hint="≈ 25 zamówień/tydzień × 47 tygodni na stałego dostawcę."
+          />
           <div className="grid grid-cols-2 gap-2">
             <Field
               label="Ile czasu szukasz produktu?"
@@ -268,9 +295,18 @@ export default function App() {
               min={0}
             />
           </div>
-          <Stat label="Czas / rok" value={hours(r.m2.before_h)} />
-        </BeforeCard>
+        </Shared>
+      }
+      advanced={
         <AfterCard>
+          <Field
+            label="Docelowa liczba dostawców (z Kramp)"
+            value={inputs.a_suppliers}
+            onChange={set("a_suppliers")}
+            min={0}
+            tone="after"
+            hint="Mniej dostawców = prostszy i szybszy proces zamawiania. To samo założenie co w kroku 1 — zmiana tu wpływa też na spotkania."
+          />
           <div className="grid grid-cols-2 gap-2">
             <Field
               label="Ile czasu szukasz produktu?"
@@ -298,30 +334,33 @@ export default function App() {
             <Stat label="Czas / rok" value={hours(r.m2.after_h)} />
           </div>
         </AfterCard>
-      </Advanced>
-    </ModuleSlide>,
+      }
+    />,
 
     <ModuleSlide
       key="m3"
       index={3}
+      isActive={active === 3}
       title="Amortyzacja zapasów"
       subtitle="Mniej towaru na półce, mniej odpisów"
       why="Dostępność produktów wpływa na wielkość magazynu."
+      whyImportant={[
+        "Dostępność od ręki to mniejszy magazyn",
+        "Mniej zalegającego towaru to niższe odpisy",
+        "Niższe zapasy to uwolniona gotówka",
+      ]}
       impact={r.m3.savings}
       impactLabel="Roczne oszczędności"
-    >
-      <BeforeCard>
-        <Field
-          label="Średnia wartość zapasów"
-          value={inputs.b_stock_value}
-          onChange={set("b_stock_value")}
-          unit="zł"
-          step={1000}
-          min={0}
-        />
-      </BeforeCard>
-      <Advanced>
-        <BeforeCard label="Obecnie — odpisy">
+      basic={
+        <BeforeCard>
+          <Field
+            label="Średnia wartość zapasów"
+            value={inputs.b_stock_value}
+            onChange={set("b_stock_value")}
+            unit="zł"
+            step={1000}
+            min={0}
+          />
           <div className="grid grid-cols-2 gap-2">
             <Field
               label="% do amortyzacji"
@@ -342,48 +381,56 @@ export default function App() {
           </div>
           <Stat label="Roczny odpis" value={money(r.m3.before_depr)} />
         </BeforeCard>
+      }
+      advanced={
         <AfterCard>
-          <div className="grid grid-cols-2 gap-2">
-            <Field
-              label="Redukcja zapasów"
-              value={inputs.stock_reduction}
-              onChange={set("stock_reduction")}
-              unit="%"
-              min={0}
-              max={100}
-              tone="after"
-            />
-            <Field
-              label="% do amortyzacji"
-              value={inputs.a_pct_depr}
-              onChange={set("a_pct_depr")}
-              unit="%"
-              min={0}
-              max={100}
-              tone="after"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <Stat
-              label="Nowe zapasy"
-              value={money(r.m3.a_stock_value)}
-              sub="auto"
-            />
-            <Stat label="Odpis" value={money(r.m3.after_depr)} />
-          </div>
-        </AfterCard>
-      </Advanced>
-    </ModuleSlide>,
+            <div className="grid grid-cols-2 gap-2">
+              <Field
+                label="Redukcja zapasów"
+                value={inputs.stock_reduction}
+                onChange={set("stock_reduction")}
+                unit="%"
+                min={0}
+                max={100}
+                tone="after"
+              />
+              <Field
+                label="% do amortyzacji"
+                value={inputs.a_pct_depr}
+                onChange={set("a_pct_depr")}
+                unit="%"
+                min={0}
+                max={100}
+                tone="after"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Stat
+                label="Nowe zapasy"
+                value={money(r.m3.a_stock_value)}
+                sub="auto"
+              />
+              <Stat label="Odpis" value={money(r.m3.after_depr)} />
+            </div>
+          </AfterCard>
+      }
+    />,
 
     <ModuleSlide
       key="m4"
       index={4}
+      isActive={active === 4}
       title="Transport"
       subtitle="Koszt transportu we wszystkich zamówieniach"
       why="Liczba dostaw wpływa na całkowity koszt transportu."
+      whyImportant={[
+        "Konsolidacja dostaw to mniej paczek",
+        "Mniej przesyłek to niższe koszty transportu",
+        "Darmowa dostawa Kramp powyżej progu zamówienia",
+      ]}
       impact={r.m4.savings}
       impactLabel="Roczne oszczędności"
-    >
+      basic={
       <BeforeCard>
         <Field
           label="Ile średnio płacisz za jedną paczkę?"
@@ -399,24 +446,23 @@ export default function App() {
           value={money(r.m4.cost_before)}
           sub="auto"
         />
+        <div className="grid grid-cols-2 gap-2">
+          <Field
+            label="% przez Kramp"
+            value={inputs.b_pct_kramp}
+            onChange={set("b_pct_kramp")}
+            unit="%"
+            min={0}
+            max={100}
+          />
+          <Stat
+            label="Średni transport (inni)"
+            value={money(r.m4.avg_carriage_before)}
+          />
+        </div>
       </BeforeCard>
-      <Advanced>
-        <BeforeCard label="Obecnie — szczegóły">
-          <div className="grid grid-cols-2 gap-2">
-            <Field
-              label="% przez Kramp"
-              value={inputs.b_pct_kramp}
-              onChange={set("b_pct_kramp")}
-              unit="%"
-              min={0}
-              max={100}
-            />
-            <Stat
-              label="Średni transport (inni)"
-              value={money(r.m4.avg_carriage_before)}
-            />
-          </div>
-        </BeforeCard>
+      }
+      advanced={
         <AfterCard>
           <div className="grid grid-cols-2 gap-2">
             <Field
@@ -449,8 +495,8 @@ export default function App() {
           />
           <Stat label="Łączny koszt transportu" value={money(r.m4.cost_after)} />
         </AfterCard>
-      </Advanced>
-    </ModuleSlide>,
+      }
+    />,
 
     <CustomerForm
       key="customer"
@@ -469,15 +515,12 @@ export default function App() {
 
   if (unlocked) {
     slides.push(
-      <SummarySlide key="summary" results={r} customer={customer} />,
+      <SummarySlide key="summary" results={r} customer={customer} inputs={inputs} />,
     );
   }
 
   const summaryIndex = unlocked ? slides.length - 1 : -1;
   const onHero = active === 0;
-  const total = slides.length;
-  const percent = Math.min(100, Math.round(((active + 1) / total) * 100));
-  const nextTitle = STEP_TITLES[active + 1] ?? "";
 
   return (
     <div className="h-dvh flex flex-col bg-zinc-100 overflow-hidden">
@@ -485,32 +528,25 @@ export default function App() {
         {!onHero && (
           <TopBar
             onReset={reset}
-            percent={percent}
             customerName={unlocked ? customer.name : null}
           />
         )}
 
-        <Pager ref={pagerRef} onIndexChange={setActive} children={slides} />
+        <Pager
+          ref={pagerRef}
+          onIndexChange={(i) => {
+            setActive(i);
+            setMaxStep((m) => Math.max(m, i));
+          }}
+          children={slides}
+        />
 
         <nav className="no-print flex-none border-t border-kramp-blue/10 bg-white">
-          <PagerNav
-            count={slides.length}
-            active={active}
-            onJump={(i) => pagerRef.current?.goTo(i)}
-            onPrev={() => pagerRef.current?.prev()}
-            onNext={() => pagerRef.current?.next()}
-            highlight={summaryIndex}
-          />
-
           {unlocked && active !== summaryIndex && (
             <button
               type="button"
               onClick={() => pagerRef.current?.goTo(summaryIndex)}
-              className="w-full bg-kramp-red text-white px-4 py-2 active:bg-kramp-red-dark transition-colors"
-              style={{
-                paddingBottom:
-                  "calc(env(safe-area-inset-bottom, 0px) + 8px)",
-              }}
+              className="w-full bg-kramp-red text-white px-4 py-2.5 active:bg-kramp-red-dark transition-colors"
             >
               <div className="grid grid-cols-3 gap-1 text-left">
                 <Cell label="Przychód / rok" value={money(r.total_revenue)} />
@@ -527,41 +563,56 @@ export default function App() {
             </button>
           )}
 
-          {!unlocked && active !== 0 && (
-            <div
-              className="bg-kramp-blue text-white px-4 pt-2"
-              style={{
-                paddingBottom:
-                  "calc(env(safe-area-inset-bottom, 0px) + 8px)",
-              }}
-            >
-              <div className="grid grid-cols-2 gap-2 text-left">
-                <Cell
-                  label="Potencjalne oszczędności / rok"
-                  value={money(r.net_benefit)}
-                  highlight
-                />
-                <Cell
-                  label="Odzyskany czas / rok"
-                  value={hours(r.total_hours_saved)}
-                />
+          {!unlocked && active !== 0 && active < 5 && (
+            <div className="bg-kramp-blue text-white px-4 py-2.5">
+              <div className="flex items-end justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-[9px] font-bold uppercase tracking-wider opacity-75 leading-tight">
+                    Potencjalne oszczędności / rok
+                  </div>
+                  <div className="font-display text-[23px] font-bold tabular-nums leading-none text-kramp-turquoise mt-0.5">
+                    {money(netSoFar)}
+                  </div>
+                </div>
+                <div className="flex-none text-right">
+                  <div className="text-[9px] font-bold uppercase tracking-wider opacity-75 leading-tight">
+                    Odzyskany czas / rok
+                  </div>
+                  <div className="font-display text-[16px] font-bold tabular-nums leading-none mt-0.5">
+                    {hours(hoursSoFar)}
+                  </div>
+                </div>
               </div>
-              <div className="text-center text-[9.5px] uppercase tracking-[0.16em] font-bold opacity-80 mt-1.5">
-                {active < 5
-                  ? `Dalej: ${nextTitle}`
-                  : "Uzupełnij dane, aby odblokować raport"}
+
+              <div className="mt-2 grid gap-1.5">
+                <BreakdownBar
+                  label="Dodatkowy przychód"
+                  value={money(revSoFar)}
+                  pct={barPct(revSoFar)}
+                />
+                <BreakdownBar
+                  label="Oszczędności kosztów"
+                  value={money(savSoFar)}
+                  pct={barPct(savSoFar)}
+                />
               </div>
             </div>
           )}
 
-          {!unlocked && active === 0 && (
-            <div
-              style={{
-                paddingBottom:
-                  "calc(env(safe-area-inset-bottom, 0px) + 4px)",
-              }}
+          <div
+            style={{
+              paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 4px)",
+            }}
+          >
+            <PagerNav
+              count={slides.length}
+              active={active}
+              onJump={(i) => pagerRef.current?.goTo(i)}
+              onPrev={() => pagerRef.current?.prev()}
+              onNext={() => pagerRef.current?.next()}
+              highlight={summaryIndex}
             />
-          )}
+          </div>
         </nav>
       </div>
     </div>
@@ -570,11 +621,9 @@ export default function App() {
 
 function TopBar({
   onReset,
-  percent,
   customerName,
 }: {
   onReset: () => void;
-  percent: number;
   customerName: string | null;
 }) {
   return (
@@ -592,39 +641,25 @@ function TopBar({
             {customerName ? customerName : "To takie proste."}
           </div>
         </div>
-        <div className="text-[11px] uppercase tracking-wider font-bold opacity-90 tabular-nums whitespace-nowrap">
-          {percent}%
-        </div>
         <button
           type="button"
           onClick={onReset}
           aria-label="Resetuj do wartości domyślnych"
           className="flex-none w-8 h-8 grid place-items-center rounded-full bg-white/15 hover:bg-white/25 active:bg-white/30 transition-colors"
         >
-          <svg viewBox="0 0 24 24" className="w-[16px] h-[16px]" fill="none">
-            <path
-              d="M4 4v6h6"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M20 12a8 8 0 1 1-2.34-5.66L20 9"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+          <svg
+            viewBox="0 0 24 24"
+            className="w-[17px] h-[17px]"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M20 11.5a8 8 0 1 1-2.1-5.4" />
+            <path d="M20 3.5v4h-4" />
           </svg>
         </button>
-      </div>
-      {/* Progress bar */}
-      <div className="h-1 bg-white/20">
-        <div
-          className="h-full bg-white/90 transition-all duration-300"
-          style={{ width: `${percent}%` }}
-        />
       </div>
     </header>
   );
@@ -632,31 +667,60 @@ function TopBar({
 
 function KrampMark() {
   return (
-    <div className="flex-none w-9 h-6 grid place-items-center bg-white/10 rounded">
-      <svg viewBox="0 0 56 36" className="w-7 h-4" aria-label="Kramp">
-        <rect x="2" y="4" width="40" height="4" fill="#fff" />
-        <rect x="2" y="14" width="32" height="4" fill="#fff" />
-        <rect x="2" y="24" width="40" height="4" fill="#fff" />
-        <polygon points="36,4 48,16 36,28 30,28 42,16 30,4" fill="#fff" />
-      </svg>
+    <img
+      src={krampLogo}
+      alt="Kramp"
+      className="flex-none w-7 h-7 rounded-md object-cover ring-1 ring-white/20"
+      draggable={false}
+    />
+  );
+}
+
+function BreakdownBar({
+  label,
+  value,
+  pct,
+}: {
+  label: string;
+  value: string;
+  pct: number;
+}) {
+  return (
+    <div className="grid gap-1">
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-white/65 truncate">
+          {label}
+        </span>
+        <span className="font-display text-[13px] font-bold tabular-nums text-white whitespace-nowrap">
+          {value}
+        </span>
+      </div>
+      <div className="h-1.5 rounded-full bg-white/15 overflow-hidden">
+        <div
+          className="h-full rounded-full bg-kramp-turquoise transition-[width] duration-500"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
     </div>
   );
 }
 
 function Shared({
   children,
-  label = "Wspólne",
+  label,
 }: {
   children: React.ReactNode;
   label?: string;
 }) {
   return (
-    <div className="rounded-xl bg-kramp-turquoise-tint border border-kramp-turquoise/30 px-3 py-2.5">
-      <div className="flex items-center gap-2 mb-1.5">
-        <span className="inline-flex h-5 px-2 items-center rounded-full bg-kramp-turquoise text-[10px] font-bold uppercase tracking-wider text-white">
-          {label}
-        </span>
-      </div>
+    <div className="rounded-xl bg-kramp-turquoise-tint border border-kramp-turquoise/30 px-3 py-2 grid gap-1.5">
+      {label && (
+        <div className="flex items-center gap-2">
+          <span className="inline-flex h-5 px-2 items-center rounded-full bg-kramp-turquoise text-[10px] font-bold uppercase tracking-wider text-white">
+            {label}
+          </span>
+        </div>
+      )}
       {children}
     </div>
   );
@@ -673,10 +737,10 @@ function Stat({
 }) {
   return (
     <div className="flex items-center justify-between gap-2 rounded-lg bg-white/60 px-2.5 py-1.5">
-      <span className="text-[10px] text-kramp-blue/60 font-bold uppercase tracking-wider truncate">
+      <span className="text-[10px] text-kramp-blue/60 font-bold uppercase tracking-wider leading-tight">
         {label}
       </span>
-      <span className="font-display text-[13.5px] font-bold tabular-nums text-kramp-blue flex items-baseline gap-1.5 whitespace-nowrap">
+      <span className="font-display text-[13.5px] font-bold tabular-nums text-kramp-blue flex items-baseline gap-1.5 whitespace-nowrap flex-none">
         {value}
         {sub && (
           <span className="text-[9px] font-bold uppercase tracking-wider text-kramp-red/80 bg-kramp-red-tint px-1 py-px rounded">
