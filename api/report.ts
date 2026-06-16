@@ -166,18 +166,19 @@ const s = StyleSheet.create({
   // Page 1
   meta: { marginTop: 2 },
   metaLabel: { fontSize: 8, color: GREY, textTransform: "uppercase", letterSpacing: 0.4 },
-  metaValue: { fontSize: 14, fontWeight: "bold", marginTop: 1 },
-  metaSub: { fontSize: 9, color: GREY },
+  metaValue: { fontSize: 14, fontWeight: "bold", marginTop: 4 },
+  metaSub: { fontSize: 9, color: GREY, marginTop: 3 },
 
-  pageTitle: { fontSize: 17, fontWeight: "bold", marginTop: 12, color: BLUE },
-  intro: { fontSize: 10.5, marginTop: 6, lineHeight: 1.5, color: "#374151" },
+  pageTitle: { fontSize: 17, fontWeight: "bold", marginTop: 20, color: BLUE, lineHeight: 1.2 },
+  intro: { fontSize: 10.5, marginTop: 10, lineHeight: 1.6, color: "#374151" },
 
-  cards: { flexDirection: "row", marginTop: 14 },
+  cards: { flexDirection: "row", marginTop: 18 },
   heroCard: {
     flex: 1,
     backgroundColor: RED,
     color: "#fff",
-    padding: 15,
+    paddingVertical: 17,
+    paddingHorizontal: 16,
     borderRadius: 6,
     marginRight: 5,
   },
@@ -185,20 +186,21 @@ const s = StyleSheet.create({
     flex: 1,
     backgroundColor: BLUE,
     color: "#fff",
-    padding: 15,
+    paddingVertical: 17,
+    paddingHorizontal: 16,
     borderRadius: 6,
     marginLeft: 5,
   },
   cardLabel: { fontSize: 8.5, textTransform: "uppercase", opacity: 0.85, letterSpacing: 0.4 },
-  cardValue: { fontSize: 23, fontWeight: "bold", marginTop: 6 },
-  cardSub: { fontSize: 8, opacity: 0.8, marginTop: 4 },
+  cardValue: { fontSize: 23, fontWeight: "bold", marginTop: 11, marginBottom: 11, lineHeight: 1.1 },
+  cardSub: { fontSize: 8, opacity: 0.8 },
 
   sectionTitle: {
     fontSize: 9,
     textTransform: "uppercase",
     color: GREY,
-    marginTop: 12,
-    marginBottom: 6,
+    marginTop: 15,
+    marginBottom: 8,
     fontWeight: "bold",
     letterSpacing: 0.5,
   },
@@ -208,60 +210,62 @@ const s = StyleSheet.create({
     textTransform: "uppercase",
     color: GREY,
     marginTop: 2,
-    marginBottom: 8,
+    marginBottom: 13,
     fontWeight: "bold",
     letterSpacing: 0.5,
   },
 
   // Composition bars (page 1)
-  compRow: { marginBottom: 9 },
-  compHead: { flexDirection: "row", justifyContent: "space-between", marginBottom: 3 },
+  compRow: { marginBottom: 12 },
+  compHead: { flexDirection: "row", justifyContent: "space-between", marginBottom: 5 },
   compName: { fontSize: 9.5, fontWeight: "bold" },
   compVal: { fontSize: 9.5, fontWeight: "bold" },
   track: { height: 7, backgroundColor: TRACK, borderRadius: 4 },
   fill: { height: 7, borderRadius: 4 },
 
   note: {
-    marginTop: 16,
+    marginTop: 22,
     backgroundColor: TURQUOISE_TINT,
     borderLeft: `3pt solid ${TURQUOISE}`,
     borderRadius: 4,
-    padding: 11,
+    paddingVertical: 13,
+    paddingHorizontal: 13,
   },
-  noteTitle: { fontSize: 8.5, fontWeight: "bold", textTransform: "uppercase", color: BLUE, letterSpacing: 0.4 },
-  noteText: { fontSize: 9, color: "#374151", marginTop: 3, lineHeight: 1.45 },
+  noteTitle: { fontSize: 8.5, fontWeight: "bold", textTransform: "uppercase", color: BLUE, letterSpacing: 0.4, marginBottom: 5 },
+  noteText: { fontSize: 9, color: "#374151", lineHeight: 1.55 },
 
-  // Page 2 modules
-  module: { marginBottom: 10 },
-  modHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 3 },
-  modName: { fontSize: 12, fontWeight: "bold", color: BLUE, flex: 1, paddingRight: 8 },
+  // Page 2 modules — 2 per page, with generous breathing room.
+  module: { marginBottom: 26 },
+  modHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 9 },
+  modName: { fontSize: 12.5, fontWeight: "bold", color: BLUE, flex: 1, paddingRight: 8 },
   modPill: {
-    fontSize: 10.5,
+    fontSize: 11,
     fontWeight: "bold",
     color: "#fff",
     backgroundColor: RED,
-    paddingVertical: 2.5,
-    paddingHorizontal: 8,
-    borderRadius: 10,
+    paddingVertical: 3,
+    paddingHorizontal: 9,
+    borderRadius: 11,
   },
-  modWhat: { fontSize: 9, color: "#374151", lineHeight: 1.4, marginBottom: 5 },
+  modWhat: { fontSize: 9.5, color: "#374151", lineHeight: 1.6, marginBottom: 14 },
   modWhy: {
-    fontSize: 8.8,
+    fontSize: 9,
     color: BLUE,
-    lineHeight: 1.4,
-    marginTop: 5,
-    paddingLeft: 8,
+    lineHeight: 1.6,
+    marginTop: 14,
+    paddingLeft: 10,
+    paddingVertical: 3,
     borderLeft: `2pt solid ${TURQUOISE}`,
   },
 
-  barRow: { marginBottom: 3.5 },
-  barTop: { flexDirection: "row", justifyContent: "space-between", marginBottom: 2 },
+  barRow: { marginBottom: 9 },
+  barTop: { flexDirection: "row", justifyContent: "space-between", marginBottom: 4 },
   barLabel: { fontSize: 8.5, color: GREY },
   barValue: { fontSize: 8.5, fontWeight: "bold", color: BLUE },
-  barCaption: { fontSize: 7.5, color: FAINT, marginTop: 2 },
+  barCaption: { fontSize: 7.5, color: FAINT, marginTop: 4 },
 
-  // Page 3 — inputs / methodology
-  grpTitle: { fontSize: 9.5, fontWeight: "bold", color: RED, marginTop: 8, marginBottom: 2 },
+  // Page 4 — inputs / methodology (a reference table; kept on one page).
+  grpTitle: { fontSize: 9.5, fontWeight: "bold", color: RED, marginTop: 9, marginBottom: 3 },
   irow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -271,20 +275,21 @@ const s = StyleSheet.create({
   ilabel: { fontSize: 9, color: "#374151", flex: 1, paddingRight: 10 },
   ivalue: { fontSize: 9, fontWeight: "bold", color: BLUE },
 
-  bullet: { flexDirection: "row", marginBottom: 3 },
+  bullet: { flexDirection: "row", marginBottom: 4 },
   bulletDot: { fontSize: 9.5, color: RED, marginRight: 6 },
-  bulletText: { fontSize: 9.5, color: "#374151", lineHeight: 1.4, flex: 1 },
+  bulletText: { fontSize: 9.5, color: "#374151", lineHeight: 1.5, flex: 1 },
 
   cta: {
     marginTop: 12,
     backgroundColor: BLUE,
     borderRadius: 6,
-    padding: 11,
+    paddingVertical: 12,
+    paddingHorizontal: 13,
   },
   ctaTitle: { fontSize: 11.5, fontWeight: "bold", color: "#fff" },
-  ctaText: { fontSize: 9, color: "#fff", opacity: 0.85, marginTop: 3, lineHeight: 1.4 },
+  ctaText: { fontSize: 9, color: "#fff", opacity: 0.85, marginTop: 5, lineHeight: 1.5 },
 
-  disclaimer: { marginTop: 10, fontSize: 7.5, color: FAINT, lineHeight: 1.45 },
+  disclaimer: { marginTop: 10, fontSize: 7.5, color: FAINT, lineHeight: 1.5 },
 });
 
 const el = React.createElement;
@@ -427,7 +432,7 @@ export function buildReport(data: ReportData): React.ReactElement {
         { key: "x", style: s.noteText },
         "Przychód to czas zespołu odzyskany dzięki prostszej obsłudze, przeliczony na pieniądze " +
           "przez Twój obrót na godzinę. Oszczędności to niższe koszty zapasu i transportu. " +
-          "Każda dźwignia jest rozpisana na stronie 2, a wszystkie założenia — na stronie 3.",
+          "Każda dźwignia jest rozpisana na kolejnych stronach, a wszystkie założenia — na końcu raportu.",
       ),
     ]),
   ];
@@ -457,7 +462,7 @@ export function buildReport(data: ReportData): React.ReactElement {
       el(Text, { key: "y", style: s.modWhy }, why),
     ]);
 
-  const page2 = el(View, { key: "p2", break: true }, [
+  const page2a = el(View, { key: "p2a", break: true }, [
     el(Text, { key: "st", style: s.sectionTitleTop }, "Cztery dźwignie — skąd bierze się wynik"),
 
     moduleBlock(
@@ -513,6 +518,10 @@ export function buildReport(data: ReportData): React.ReactElement {
       ],
       "Dlaczego to dla Ciebie ważne: jedno źródło to jeden koszyk, jedna dostawa, jedna faktura. Mniej klikania, mniej przyjęć na rampie i mniej pomyłek.",
     ),
+  ]);
+
+  const page2b = el(View, { key: "p2b", break: true }, [
+    el(Text, { key: "st", style: s.sectionTitleTop }, "Skąd bierze się wynik — ciąg dalszy"),
 
     moduleBlock(
       "m3",
@@ -606,7 +615,7 @@ export function buildReport(data: ReportData): React.ReactElement {
     bulletItem("wb2", "Wartości są orientacyjne i bazują na Twoich danych oraz średnich rynkowych."),
     bulletItem("wb3", "Ostateczny zakres ustalasz wspólnie z doradcą Kramp."),
 
-    el(View, { key: "cta", style: s.cta }, [
+    el(View, { key: "cta", style: s.cta, wrap: false }, [
       el(Text, { key: "t", style: s.ctaTitle }, "Porozmawiajmy o Twoim wyniku"),
       el(
         Text,
@@ -628,7 +637,7 @@ export function buildReport(data: ReportData): React.ReactElement {
   return el(
     Document,
     {},
-    el(Page, { size: "A4", style: s.page }, [header, footer, ...page1, page2, page3]),
+    el(Page, { size: "A4", style: s.page }, [header, footer, ...page1, page2a, page2b, page3]),
   );
 }
 
