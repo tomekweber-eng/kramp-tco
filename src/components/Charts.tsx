@@ -93,7 +93,7 @@ export function RevSavDonut({
       <div className="grid gap-1.5 min-w-0 flex-1">
         <Legend
           color="var(--color-kramp-red)"
-          label="Dodatkowy przychód"
+          label="Wartość odzyskanego czasu"
           value={revenue}
           pct={(revenue / total) * 100}
         />

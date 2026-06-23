@@ -105,9 +105,9 @@ function html(data: ReportData): string {
       <table role="presentation" width="100%" style="border-collapse:separate;border-spacing:0">
         <tr>
           <td style="background:#ffffff;border:1.5px solid ${RED};border-radius:8px;padding:18px 18px;width:50%" valign="top">
-            <div style="font-size:11px;text-transform:uppercase;color:${GREY};letter-spacing:.4px">Roczna korzyść netto</div>
+            <div style="font-size:11px;text-transform:uppercase;color:${GREY};letter-spacing:.4px">Szacowany potencjał biznesowy</div>
             <div style="font-size:27px;font-weight:bold;color:${RED};line-height:1.1;margin:13px 0">${fmtMoney(results.net_benefit)}</div>
-            <div style="font-size:11px;color:${GREY}">Przychód + oszczędności kosztów</div>
+            <div style="font-size:11px;color:${GREY}">Potencjał z odzyskanego czasu i ograniczenia kosztów</div>
           </td>
           <td style="width:14px"></td>
           <td style="background:#ffffff;border:1.5px solid ${BLUE};border-radius:8px;padding:18px 18px;width:50%" valign="top">

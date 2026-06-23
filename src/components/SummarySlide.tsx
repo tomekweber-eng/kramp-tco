@@ -95,13 +95,13 @@ export default function SummarySlide({ results, customer, inputs }: Props) {
         {/* Hero total */}
         <div className="rounded-2xl bg-kramp-red text-white px-4 py-3 shadow-md">
           <div className="text-[10px] font-bold uppercase tracking-wider opacity-85">
-            Roczna korzyść netto
+            Szacowany potencjał biznesowy
           </div>
           <div className="font-display text-[36px] font-bold tabular-nums leading-[1] mt-0.5">
             {money(results.net_benefit)}
           </div>
           <div className="text-[10.5px] opacity-85 mt-1">
-            Rocznie, przy zaprezentowanym modelu konsolidacji
+            Potencjał z odzyskanego czasu i ograniczenia kosztów
           </div>
         </div>
 

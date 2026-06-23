@@ -199,8 +199,8 @@ const s = StyleSheet.create({
     fontSize: 9,
     textTransform: "uppercase",
     color: GREY,
-    marginTop: 15,
-    marginBottom: 8,
+    marginTop: 11,
+    marginBottom: 6,
     fontWeight: "bold",
     letterSpacing: 0.5,
   },
@@ -265,22 +265,23 @@ const s = StyleSheet.create({
   barCaption: { fontSize: 7.5, color: FAINT, marginTop: 4 },
 
   // Page 4 — inputs / methodology (a reference table; kept on one page).
-  grpTitle: { fontSize: 9.5, fontWeight: "bold", color: RED, marginTop: 9, marginBottom: 3 },
+  grpTitle: { fontSize: 9.5, fontWeight: "bold", color: RED, marginTop: 6, marginBottom: 2 },
   irow: {
     flexDirection: "row",
     justifyContent: "space-between",
     borderBottom: `0.7pt solid ${LINE}`,
-    paddingVertical: 3,
+    paddingVertical: 2,
   },
   ilabel: { fontSize: 9, color: "#374151", flex: 1, paddingRight: 10 },
   ivalue: { fontSize: 9, fontWeight: "bold", color: BLUE },
+  tableNote: { fontSize: 7.5, color: FAINT, marginTop: 5 },
 
-  bullet: { flexDirection: "row", marginBottom: 4 },
+  bullet: { flexDirection: "row", marginBottom: 3 },
   bulletDot: { fontSize: 9.5, color: RED, marginRight: 6 },
   bulletText: { fontSize: 9.5, color: "#374151", lineHeight: 1.5, flex: 1 },
 
   cta: {
-    marginTop: 12,
+    marginTop: 9,
     backgroundColor: BLUE,
     borderRadius: 6,
     paddingVertical: 12,
@@ -288,6 +289,21 @@ const s = StyleSheet.create({
   },
   ctaTitle: { fontSize: 11.5, fontWeight: "bold", color: "#fff" },
   ctaText: { fontSize: 9, color: "#fff", opacity: 0.85, marginTop: 5, lineHeight: 1.5 },
+  ctaCheck: { fontSize: 9, color: "#fff", marginTop: 3, lineHeight: 1.4 },
+
+  // "Co pomaga osiągnąć ten wynik?" — value props in a compact 2-column grid.
+  help: {
+    marginTop: 9,
+    backgroundColor: TURQUOISE_TINT,
+    borderLeft: `3pt solid ${TURQUOISE}`,
+    borderRadius: 4,
+    paddingVertical: 11,
+    paddingHorizontal: 13,
+  },
+  helpGrid: { flexDirection: "row", flexWrap: "wrap", marginTop: 2 },
+  helpItem: { width: "50%", flexDirection: "row", paddingRight: 8, marginTop: 4 },
+  helpDot: { fontSize: 9, color: TURQUOISE, marginRight: 5 },
+  helpText: { fontSize: 9, color: "#374151", lineHeight: 1.4, flex: 1 },
 
   disclaimer: { marginTop: 10, fontSize: 7.5, color: FAINT, lineHeight: 1.5 },
 });
@@ -330,6 +346,13 @@ function bulletItem(key: string, text: string): React.ReactElement {
   ]);
 }
 
+function helpItem(key: string, text: string): React.ReactElement {
+  return el(View, { key, style: s.helpItem }, [
+    el(Text, { key: "d", style: s.helpDot }, "•"),
+    el(Text, { key: "t", style: s.helpText }, text),
+  ]);
+}
+
 export function buildReport(data: ReportData): React.ReactElement {
   const { customer, inputs: i, results: r, date } = data;
 
@@ -361,12 +384,14 @@ export function buildReport(data: ReportData): React.ReactElement {
   ]);
 
   // ---- Page 1: summary -----------------------------------------------------
+  // Sorted by impact, biggest first — so the client immediately sees where the
+  // largest potential sits (report-side mirror of the app's "Największy potencjał").
   const levers = [
     { name: "Spotkania z dostawcami", value: r.m1.revenue },
     { name: "Proces zamawiania", value: r.m2.revenue },
     { name: "Amortyzacja zapasów", value: r.m3.savings },
     { name: "Transport", value: r.m4.savings },
-  ];
+  ].sort((a, b) => Math.abs(b.value) - Math.abs(a.value));
   const leverMax = Math.max(1, ...levers.map((l) => Math.abs(l.value)));
   const days = Math.round(r.total_hours_saved / 8);
 
@@ -386,15 +411,15 @@ export function buildReport(data: ReportData): React.ReactElement {
       Text,
       { key: "intro", style: s.intro },
       "Ten raport pokazuje, ile Twoja firma może zyskać, przenosząc część zaopatrzenia do " +
-        "jednego, szerokiego dostawcy. Nie liczymy życzeń — liczymy na Twoich danych, według " +
-        "jawnych założeń opisanych na ostatniej stronie. Każdą kwotę możesz prześledzić krok po kroku.",
+        "jednego, szerokiego dostawcy. Raport bazuje na podanych danych i przejrzystych założeniach " +
+        "opisanych na końcu dokumentu. Każdą kwotę możesz prześledzić krok po kroku.",
     ),
 
     el(View, { key: "cards", style: s.cards }, [
       el(View, { key: "m", style: s.heroCard }, [
-        el(Text, { key: "l", style: s.cardLabel }, "Roczna korzyść netto"),
+        el(Text, { key: "l", style: s.cardLabel }, "Szacowany potencjał biznesowy"),
         el(Text, { key: "v", style: s.cardValue }, fmtMoney(r.net_benefit)),
-        el(Text, { key: "s", style: s.cardSub }, "Dodatkowy przychód + oszczędności kosztów"),
+        el(Text, { key: "s", style: s.cardSub }, "Potencjał z odzyskanego czasu i ograniczenia kosztów"),
       ]),
       el(View, { key: "t", style: s.timeCard }, [
         el(Text, { key: "l", style: s.cardLabel }, "Odzyskany czas / rok"),
@@ -403,7 +428,7 @@ export function buildReport(data: ReportData): React.ReactElement {
       ]),
     ]),
 
-    el(Text, { key: "ct", style: s.sectionTitle }, "Z czego składa się korzyść"),
+    el(Text, { key: "ct", style: s.sectionTitle }, "Największy potencjał"),
     ...levers.map((l, idx) =>
       el(View, { key: `comp${idx}`, style: s.compRow }, [
         el(View, { key: "h", style: s.compHead }, [
@@ -430,10 +455,22 @@ export function buildReport(data: ReportData): React.ReactElement {
       el(
         Text,
         { key: "x", style: s.noteText },
-        "Przychód to czas zespołu odzyskany dzięki prostszej obsłudze, przeliczony na pieniądze " +
-          "przez Twój obrót na godzinę. Oszczędności to niższe koszty zapasu i transportu. " +
+        "Wartość odzyskanego czasu to czas zespołu odzyskany dzięki prostszej obsłudze, przeliczony " +
+          "na pieniądze przez Twój obrót na godzinę. Oszczędności to niższe koszty zapasu i transportu. " +
           "Każda dźwignia jest rozpisana na kolejnych stronach, a wszystkie założenia — na końcu raportu.",
       ),
+    ]),
+
+    el(View, { key: "help", style: s.help, wrap: false }, [
+      el(Text, { key: "t", style: s.noteTitle }, "Co pomaga osiągnąć ten wynik?"),
+      el(View, { key: "g", style: s.helpGrid }, [
+        helpItem("h1", "Szeroki asortyment w jednym miejscu"),
+        helpItem("h2", "Mniejsza liczba dostawców"),
+        helpItem("h3", "Zamówienia online 24/7"),
+        helpItem("h4", "Dostawa następnego dnia"),
+        helpItem("h5", "Wysoka dostępność produktów"),
+        helpItem("h6", "Wsparcie doradcy Kramp"),
+      ]),
     ]),
   ];
 
@@ -482,7 +519,7 @@ export function buildReport(data: ReportData): React.ReactElement {
         ),
         bar(
           "a",
-          "Z Kramp",
+          "Scenariusz z Kramp",
           fmtHours(r.m1.after_h),
           r.m1.after_h / m1Max,
           TURQUOISE,
@@ -509,7 +546,7 @@ export function buildReport(data: ReportData): React.ReactElement {
         ),
         bar(
           "a",
-          "Z Kramp",
+          "Scenariusz z Kramp",
           fmtHours(r.m2.after_h),
           r.m2.after_h / m2Max,
           TURQUOISE,
@@ -540,7 +577,7 @@ export function buildReport(data: ReportData): React.ReactElement {
         ),
         bar(
           "a",
-          "Z Kramp",
+          "Scenariusz z Kramp",
           fmtMoney(r.m3.after_depr),
           r.m3.after_depr / m3Max,
           TURQUOISE,
@@ -567,7 +604,7 @@ export function buildReport(data: ReportData): React.ReactElement {
         ),
         bar(
           "a",
-          "Z Kramp",
+          "Scenariusz z Kramp",
           fmtMoney(r.m4.cost_after),
           r.m4.cost_after / m4Max,
           TURQUOISE,
@@ -601,14 +638,20 @@ export function buildReport(data: ReportData): React.ReactElement {
     inputRow("g4b", "Udział paczek przez Kramp (dziś → docelowo)", `${fmtNum(i.b_pct_kramp)}% → ${fmtNum(i.a_pct_kramp)}%`),
     inputRow("g4c", "Stawka frachtu Kramp / pozostali", `${fmtMoney(i.kramp_freight)} · ${fmtMoney(i.a_avg_carriage_other)}`),
 
+    el(
+      Text,
+      { key: "inote", style: s.tableNote },
+      "* Wartości wstępne oparte na średnich rynkowych — możesz je nadpisać własnymi danymi.",
+    ),
+
     el(Text, { key: "st2", style: s.sectionTitle }, "Jak to liczymy"),
-    bulletItem("mb1", "Przychód z czasu = odzyskane godziny × Twój obrót na godzinę pracy."),
+    bulletItem("mb1", "Wartość odzyskanego czasu = odzyskane godziny × Twój obrót na godzinę pracy."),
     bulletItem(
       "mb2",
       "Liczba zamówień i koszty transportu skalują się udziałem jednego dostawcy — dlatego zmiana liczby dostawców porusza cały wynik.",
     ),
     bulletItem("mb3", "Oszczędność = koszt dziś − koszt po konsolidacji."),
-    bulletItem("mb4", "Korzyść netto = dodatkowy przychód + oszczędności kosztów."),
+    bulletItem("mb4", "Szacowany potencjał = wartość odzyskanego czasu + oszczędności kosztów."),
 
     el(Text, { key: "st3", style: s.sectionTitle }, "Co wpływa na wynik"),
     bulletItem("wb1", "Im większa różnica między liczbą dostawców dziś a docelowo, tym większy efekt."),
@@ -616,12 +659,19 @@ export function buildReport(data: ReportData): React.ReactElement {
     bulletItem("wb3", "Ostateczny zakres ustalasz wspólnie z doradcą Kramp."),
 
     el(View, { key: "cta", style: s.cta, wrap: false }, [
-      el(Text, { key: "t", style: s.ctaTitle }, "Porozmawiajmy o Twoim wyniku"),
+      el(Text, { key: "t", style: s.ctaTitle }, "Następny krok"),
       el(
         Text,
         { key: "x", style: s.ctaText },
-        `Doradca Kramp pomoże dopasować zakres konsolidacji do Twojej firmy. Zadzwoń: ${CONTACT.phone} ` +
-          `lub napisz: ${CONTACT.email}.`,
+        "Umów rozmowę z doradcą Kramp. Podczas rozmowy:",
+      ),
+      el(Text, { key: "c1", style: s.ctaCheck }, "✓  zweryfikujemy założenia raportu"),
+      el(Text, { key: "c2", style: s.ctaCheck }, "✓  pokażemy największe źródła oszczędności"),
+      el(Text, { key: "c3", style: s.ctaCheck }, "✓  przygotujemy rekomendacje dla Twojej firmy"),
+      el(
+        Text,
+        { key: "x2", style: [s.ctaText, { marginTop: 8 }] },
+        `Zadzwoń: ${CONTACT.phone} · napisz: ${CONTACT.email}`,
       ),
     ]),
 
@@ -629,8 +679,8 @@ export function buildReport(data: ReportData): React.ReactElement {
       Text,
       { key: "disc", style: s.disclaimer },
       "Wartości mają charakter orientacyjny i bazują na podanych danych oraz średnich rynkowych. " +
-        "Niniejszy raport nie stanowi oferty w rozumieniu przepisów prawa. Ostateczna korzyść zależy " +
-        "od zakresu konsolidacji ustalonego z Kramp.",
+        "Raport nie stanowi oferty w rozumieniu przepisów prawa; ostateczna korzyść zależy od zakresu " +
+        "konsolidacji ustalonego z Kramp.",
     ),
   ]);
 

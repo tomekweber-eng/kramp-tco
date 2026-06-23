@@ -96,6 +96,11 @@ export default function ModuleSlide({
         style={{ touchAction: "pan-y" }}
       >
         {hasTabs ? (tab === "basic" ? basic : advanced) : basic}
+        <p className="text-[9.5px] leading-snug text-kramp-blue/40 px-0.5 pt-0.5">
+          <span className="font-bold text-kramp-red/70">*</span> Wartości
+          wstępne oparte na średnich rynkowych — możesz je nadpisać własnymi
+          danymi.
+        </p>
       </div>
 
       {/* "Why it matters" reinforcement bullets — basic tab only, to keep the

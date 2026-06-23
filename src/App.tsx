@@ -180,7 +180,7 @@ export default function App() {
       ]}
       hoursSaved={r.m1.hours_saved}
       impact={r.m1.revenue}
-      impactLabel="Dodatkowy przychód / rok"
+      impactLabel="Wartość odzyskanego czasu"
       basic={
         <BeforeCard>
           <div className="grid grid-cols-2 gap-2">
@@ -267,7 +267,7 @@ export default function App() {
       ]}
       hoursSaved={r.m2.hours_saved}
       impact={r.m2.revenue}
-      impactLabel="Dodatkowy przychód / rok"
+      impactLabel="Wartość odzyskanego czasu"
       basic={
         <Shared>
           <Field
@@ -549,10 +549,10 @@ export default function App() {
               className="w-full bg-kramp-red text-white px-4 py-2.5 active:bg-kramp-red-dark transition-colors"
             >
               <div className="grid grid-cols-3 gap-1 text-left">
-                <Cell label="Przychód / rok" value={money(r.total_revenue)} />
+                <Cell label="Wartość czasu / rok" value={money(r.total_revenue)} />
                 <Cell label="Oszczędności / rok" value={money(r.total_savings)} />
                 <Cell
-                  label="Netto / rok"
+                  label="Potencjał / rok"
                   value={money(r.net_benefit)}
                   highlight
                 />
@@ -568,7 +568,7 @@ export default function App() {
               <div className="flex items-end justify-between gap-3">
                 <div className="min-w-0">
                   <div className="text-[9px] font-bold uppercase tracking-wider opacity-75 leading-tight">
-                    Potencjalne oszczędności / rok
+                    Szacowany potencjał / rok
                   </div>
                   <div className="font-display text-[23px] font-bold tabular-nums leading-none text-kramp-turquoise mt-0.5">
                     {money(netSoFar)}
@@ -586,7 +586,7 @@ export default function App() {
 
               <div className="mt-2 grid gap-1.5">
                 <BreakdownBar
-                  label="Dodatkowy przychód"
+                  label="Wartość odzyskanego czasu"
                   value={money(revSoFar)}
                   pct={barPct(revSoFar)}
                 />
