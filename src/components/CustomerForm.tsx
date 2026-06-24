@@ -40,11 +40,11 @@ export default function CustomerForm({
 
   return (
     <div
-      className="h-full flex flex-col px-5 py-5 overflow-y-auto"
+      className="h-full flex flex-col px-5 py-3.5 overflow-y-auto"
       style={{ touchAction: "pan-y" }}
     >
       {/* Locked badge */}
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-2">
         <span className="inline-flex h-6 px-2 items-center rounded-full bg-kramp-red text-[11px] font-bold uppercase tracking-wider text-white gap-1">
           <Lock />
           Ostatni krok
@@ -57,13 +57,13 @@ export default function CustomerForm({
       <h1 className="font-display text-[24px] font-bold uppercase tracking-tight text-kramp-blue leading-[1.08] mb-1.5">
         Twój raport oszczędności
       </h1>
-      <p className="text-[13px] leading-snug text-kramp-blue/65 mb-3">
+      <p className="text-[13px] leading-snug text-kramp-blue/65 mb-2">
         Uzupełnij dane, a otrzymasz pełny raport oszczędności wraz z
         rekomendacjami i wersją do druku.
       </p>
 
       {/* Already-computed preview — show the value before asking for data */}
-      <div className="rounded-2xl bg-kramp-blue text-white px-3.5 py-3 mb-4 shadow-sm">
+      <div className="rounded-2xl bg-kramp-blue text-white px-3.5 py-2.5 mb-2.5 shadow-sm">
         <div className="grid grid-cols-2 gap-2">
           <div className="min-w-0">
             <div className="text-[9px] uppercase tracking-wider font-bold opacity-70 leading-tight mb-0.5">
@@ -84,7 +84,7 @@ export default function CustomerForm({
         </div>
       </div>
 
-      <div className="grid gap-2.5">
+      <div className="grid gap-2">
         <Input
           label="Nazwa firmy"
           value={customer.name}
@@ -117,7 +117,7 @@ export default function CustomerForm({
       </div>
 
       {/* RODO consent */}
-      <div className="grid gap-2 mt-3.5">
+      <div className="grid gap-2 mt-2.5">
         <Check
           checked={consent.rodo}
           onChange={(v) => onConsentChange({ ...consent, rodo: v })}
@@ -142,7 +142,7 @@ export default function CustomerForm({
         </Check>
       </div>
 
-      <div className="mt-auto pt-4">
+      <div className="mt-auto pt-2.5">
         {error && (
           <div className="mb-2.5 rounded-xl bg-kramp-red-tint border border-kramp-red/20 px-3 py-2">
             <p className="text-[12px] text-kramp-red font-medium leading-snug">
@@ -187,7 +187,7 @@ export default function CustomerForm({
             "Uzupełnij dane i zaznacz zgodę"
           )}
         </button>
-        <p className="text-[10.5px] text-center text-kramp-blue/45 mt-2 leading-snug">
+        <p className="text-[10.5px] text-center text-kramp-blue/45 mt-1.5 leading-snug">
           Administratorem danych jest Kramp. Dane wykorzystamy wyłącznie do
           kontaktu w sprawie raportu.
         </p>

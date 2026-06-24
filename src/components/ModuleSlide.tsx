@@ -49,9 +49,9 @@ export default function ModuleSlide({
   }
 
   return (
-    <div className="h-full flex flex-col px-4 pt-3 pb-2 overflow-hidden">
+    <div className="h-full flex flex-col px-4 pt-2.5 pb-1.5 overflow-hidden">
       {/* Title row */}
-      <div className="flex items-center gap-2.5 mb-2 flex-none">
+      <div className="flex items-center gap-2.5 mb-1 flex-none">
         <span className="flex-none w-8 h-8 rounded-lg bg-kramp-red text-white grid place-items-center font-display text-[15px] font-bold">
           {index}
         </span>
@@ -67,7 +67,7 @@ export default function ModuleSlide({
 
       {/* "Why we ask" microcopy */}
       {why && (
-        <p className="flex-none mb-2 text-[11px] leading-snug text-kramp-blue/55">
+        <p className="flex-none mb-1.5 text-[11px] leading-snug text-kramp-blue/55">
           <span className="font-bold text-kramp-blue/70">Dlaczego pytamy? </span>
           {why}
         </p>
@@ -75,7 +75,7 @@ export default function ModuleSlide({
 
       {/* Tabs: basic inputs vs. calculation assumptions */}
       {hasTabs && (
-        <div className="flex-none mb-2 grid grid-cols-2 gap-1 p-1 rounded-xl bg-kramp-blue/[0.06]">
+        <div className="flex-none mb-1 grid grid-cols-2 gap-1 p-1 rounded-xl bg-kramp-blue/[0.06]">
           <TabButton active={tab === "basic"} onClick={() => setTab("basic")}>
             {basicLabel}
           </TabButton>
@@ -92,7 +92,7 @@ export default function ModuleSlide({
           touch-action: pan-y keeps vertical scroll from being stolen by the
           horizontal swipe pager on touch devices. */}
       <div
-        className="flex-1 min-h-0 overflow-y-auto -mx-1 px-1 grid gap-2 content-start"
+        className="flex-1 min-h-0 overflow-y-auto -mx-1 px-1 grid gap-1 content-start"
         style={{ touchAction: "pan-y" }}
       >
         {hasTabs ? (tab === "basic" ? basic : advanced) : basic}
@@ -106,7 +106,7 @@ export default function ModuleSlide({
       {/* "Why it matters" reinforcement bullets — basic tab only, to keep the
           assumptions tab compact enough to fit one screen. */}
       {(!hasTabs || tab === "basic") && whyImportant && whyImportant.length > 0 && (
-        <div className="flex-none mt-2 rounded-2xl bg-kramp-turquoise-tint border border-kramp-turquoise/30 px-3.5 py-2">
+        <div className="flex-none mt-1.5 rounded-2xl bg-kramp-turquoise-tint border border-kramp-turquoise/30 px-3.5 py-1.5">
           <div className="text-[10px] font-bold uppercase tracking-wider text-kramp-success mb-1">
             Dlaczego to ważne
           </div>
@@ -139,7 +139,7 @@ export default function ModuleSlide({
       {/* Result strip — basic tab only; on the assumptions tab the global bar
           already shows totals, freeing the full height for the fields. */}
       {(!hasTabs || tab === "basic") && (
-        <div className="mt-2.5 flex-none rounded-2xl bg-white border-2 border-kramp-blue px-3.5 py-2.5 flex items-center gap-3">
+        <div className="mt-1.5 flex-none rounded-2xl bg-white border-2 border-kramp-blue px-3.5 py-2 flex items-center gap-3">
         {hoursSaved !== undefined && (
           <>
             <div className="min-w-0 flex-1 flex items-center gap-2">
