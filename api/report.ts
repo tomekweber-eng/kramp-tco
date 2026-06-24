@@ -280,17 +280,6 @@ const s = StyleSheet.create({
   bulletDot: { fontSize: 9.5, color: RED, marginRight: 6 },
   bulletText: { fontSize: 9.5, color: "#374151", lineHeight: 1.5, flex: 1 },
 
-  cta: {
-    marginTop: 9,
-    backgroundColor: BLUE,
-    borderRadius: 6,
-    paddingVertical: 12,
-    paddingHorizontal: 13,
-  },
-  ctaTitle: { fontSize: 11.5, fontWeight: "bold", color: "#fff" },
-  ctaText: { fontSize: 9, color: "#fff", opacity: 0.85, marginTop: 5, lineHeight: 1.5 },
-  ctaCheck: { fontSize: 9, color: "#fff", marginTop: 3, lineHeight: 1.4 },
-
   // "Co pomaga osiągnąć ten wynik?" — value props in a compact 2-column grid.
   help: {
     marginTop: 9,
@@ -657,23 +646,6 @@ export function buildReport(data: ReportData): React.ReactElement {
     bulletItem("wb1", "Im większa różnica między liczbą dostawców dziś a docelowo, tym większy efekt."),
     bulletItem("wb2", "Wartości są orientacyjne i bazują na Twoich danych oraz średnich rynkowych."),
     bulletItem("wb3", "Ostateczny zakres ustalasz wspólnie z doradcą Kramp."),
-
-    el(View, { key: "cta", style: s.cta, wrap: false }, [
-      el(Text, { key: "t", style: s.ctaTitle }, "Następny krok"),
-      el(
-        Text,
-        { key: "x", style: s.ctaText },
-        "Umów rozmowę z doradcą Kramp. Podczas rozmowy:",
-      ),
-      el(Text, { key: "c1", style: s.ctaCheck }, "✓  zweryfikujemy założenia raportu"),
-      el(Text, { key: "c2", style: s.ctaCheck }, "✓  pokażemy największe źródła oszczędności"),
-      el(Text, { key: "c3", style: s.ctaCheck }, "✓  przygotujemy rekomendacje dla Twojej firmy"),
-      el(
-        Text,
-        { key: "x2", style: [s.ctaText, { marginTop: 8 }] },
-        `Zadzwoń: ${CONTACT.phone} · napisz: ${CONTACT.email}`,
-      ),
-    ]),
 
     el(
       Text,
