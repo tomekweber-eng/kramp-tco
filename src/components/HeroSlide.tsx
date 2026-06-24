@@ -1,4 +1,4 @@
-import heroImg from "../assets/hero-kramp.png";
+import heroImg from "../assets/kramp-logo-white.png";
 
 type Props = {
   onStart: () => void;
@@ -43,18 +43,12 @@ export default function HeroSlide({ onStart }: Props) {
 
         {/* Brandmark — large, centred */}
         <div className="flex-1 grid place-items-center my-2">
-          <div className="relative">
-            <div
-              aria-hidden
-              className="absolute inset-0 rounded-[28px] bg-white/10 blur-2xl"
-            />
-            <img
-              src={heroImg}
-              alt="Kramp"
-              className="relative w-44 h-44 sm:w-48 sm:h-48 rounded-[24px] shadow-2xl ring-1 ring-white/15 object-cover"
-              draggable={false}
-            />
-          </div>
+          <img
+            src={heroImg}
+            alt="Kramp"
+            className="w-56 sm:w-60 h-auto object-contain"
+            draggable={false}
+          />
         </div>
 
         {/* Hero copy */}

@@ -111,7 +111,6 @@ const CONTACT = {
   email: "info.pl@kramp.com",
   web: "kramp.com",
 };
-const CLAIM = "To takie proste.";
 
 const nf0 = new Intl.NumberFormat("pl-PL", { maximumFractionDigits: 0 });
 const fmtMoney = (n: number) => `${nf0.format(Math.round(n))} zł`;
@@ -142,9 +141,7 @@ const s = StyleSheet.create({
     paddingVertical: 11,
     paddingHorizontal: 38,
   },
-  logo: { width: 22, height: 22, borderRadius: 4, marginRight: 9 },
-  headerBrand: { fontSize: 13, fontWeight: "bold", letterSpacing: 0.5 },
-  headerClaim: { fontSize: 8.5, opacity: 0.9, marginTop: 1 },
+  logo: { width: 95, height: 14, objectFit: "contain", marginRight: 9 },
   headerRight: { marginLeft: "auto", fontSize: 8.5, opacity: 0.9, textAlign: "right" },
 
   footerBar: {
@@ -348,10 +345,6 @@ export function buildReport(data: ReportData): React.ReactElement {
   // ---- Header & footer (fixed, repeat on every page) -----------------------
   const header = el(View, { key: "hdr", fixed: true, style: s.headerBar }, [
     el(Image, { key: "logo", src: KRAMP_LOGO_DATA_URI, style: s.logo }),
-    el(View, { key: "txt" }, [
-      el(Text, { key: "b", style: s.headerBrand }, "KRAMP"),
-      el(Text, { key: "c", style: s.headerClaim }, CLAIM),
-    ]),
     el(Text, { key: "r", style: s.headerRight }, "Raport potencjału\nkonsolidacji"),
   ]);
 

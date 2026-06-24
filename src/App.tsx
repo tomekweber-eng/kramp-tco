@@ -10,7 +10,7 @@ import HeroSlide from "./components/HeroSlide";
 import CustomerForm from "./components/CustomerForm";
 import SummarySlide from "./components/SummarySlide";
 import { isCustomerValid, type Customer } from "./types";
-import krampLogo from "./assets/hero-kramp.png";
+import krampLogo from "./assets/kramp-logo-white.png";
 
 // Auto-save: persist progress so a refresh returns to where the user left off.
 const STORAGE_KEY = "kramp-tco-v1";
@@ -670,7 +670,7 @@ function KrampMark() {
     <img
       src={krampLogo}
       alt="Kramp"
-      className="flex-none w-7 h-7 rounded-md object-cover ring-1 ring-white/20"
+      className="flex-none h-8 w-8 object-contain"
       draggable={false}
     />
   );

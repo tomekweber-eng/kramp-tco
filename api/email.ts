@@ -37,7 +37,7 @@ function html(data: ReportData): string {
   // Logo lives in /public so it has a stable, image-client-friendly URL
   // (data-URI images are stripped by Gmail). REPORT_SITE_URL overrides the host.
   const site = (process.env.REPORT_SITE_URL || "https://kramp-tco.vercel.app").replace(/\/$/, "");
-  const logo = `${site}/hero-kramp.png`;
+  const logo = `${site}/kramp-logo-white.png`;
 
   const levers = [
     { name: "Spotkania z dostawcami", value: results.m1.revenue },
@@ -74,17 +74,9 @@ function html(data: ReportData): string {
   <tr><td align="center">
   <table role="presentation" width="600" style="width:600px;max-width:600px;border-collapse:collapse;background:#ffffff;border:1px solid ${LINE};border-radius:10px;overflow:hidden">
 
-    <!-- Header: logo + claim (as in the PDF) -->
-    <tr><td style="background:${RED};padding:20px 28px">
-      <table role="presentation" style="border-collapse:collapse"><tr>
-        <td valign="middle" style="padding-right:11px">
-          <img src="${logo}" width="26" height="26" alt="Kramp" style="display:block;border-radius:4px" />
-        </td>
-        <td valign="middle">
-          <div style="font-size:20px;font-weight:bold;color:#ffffff;letter-spacing:.5px;line-height:1.1">KRAMP</div>
-          <div style="font-size:12px;color:#ffffff;opacity:.9;line-height:1.3">To takie proste.</div>
-        </td>
-      </tr></table>
+    <!-- Header: white Kramp logo only -->
+    <tr><td style="background:${RED};padding:18px 28px">
+      <img src="${logo}" height="44" alt="Kramp" style="display:block;border:0" />
     </td></tr>
 
     <tr><td style="padding:28px 28px 0">
