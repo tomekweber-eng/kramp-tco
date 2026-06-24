@@ -174,9 +174,8 @@ export default function SummarySlide({ results, customer, inputs }: Props) {
         </p>
 
         <div className="no-print grid gap-2">
-          {/* TODO: docelowy URL umawiania rozmowy z doradcą Kramp */}
           <a
-            href="https://www.kramp.com/"
+            href="https://www.kramp.com/shop-pl/pl/bc/zostan-klientem"
             target="_blank"
             rel="noopener noreferrer"
             className="w-full h-11 rounded-xl bg-kramp-red text-white font-display font-bold uppercase tracking-wide text-[14px] hover:bg-kramp-red-dark active:scale-[0.99] flex items-center justify-center gap-2"
