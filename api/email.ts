@@ -142,8 +142,7 @@ function html(data: ReportData): string {
 
     <!-- CTA: outlined button (no fill) -->
     <tr><td style="padding:28px 28px 6px" align="center">
-      <!-- TODO: docelowy URL umawiania rozmowy z doradcą Kramp -->
-      <a href="https://www.kramp.com/" style="display:inline-block;background:#ffffff;border:2px solid ${RED};color:${RED};text-decoration:none;font-weight:bold;font-size:14px;padding:13px 28px;border-radius:8px">
+      <a href="https://www.kramp.com/shop-pl/pl/bc/zostan-klientem" style="display:inline-block;background:#ffffff;border:2px solid ${RED};color:${RED};text-decoration:none;font-weight:bold;font-size:14px;padding:13px 28px;border-radius:8px">
         Porozmawiaj z doradcą Kramp
       </a>
     </td></tr>
